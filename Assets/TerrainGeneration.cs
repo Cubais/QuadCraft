@@ -7,15 +7,17 @@ public class TerrainGeneration : MonoBehaviour
 {
     public static TerrainGeneration instance;
 
+    [Tooltip("Terrain chunk is a square of blocks, this number represents side of that square")]
     public int chunkSize;
-    
+
+    [Tooltip("Bigger number makes terrain more hilly, smaller more flat")]
     public float noiseScale;
 
+    [Tooltip("Noise offset of starting terrain chunk")]
     public Vector2 noiseStartOffset;
 
+    [Tooltip("Terrain is build of smaller terrain chunks arranged in square, this number represents number of chunks along the side of that square")]
     public int numOfChunks = 3;
-
-    public RawImage noiseImage;
         
     [SerializeField]
     GameObject terrainChunkPrefab;
@@ -51,6 +53,16 @@ public class TerrainGeneration : MonoBehaviour
         {
             CreateChunkSpace(ref terrainChunks, Direction.DOWN);
         }
+
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            CreateChunkSpace(ref terrainChunks, Direction.LEFT);
+        }
+
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            CreateChunkSpace(ref terrainChunks, Direction.RIGHT);
+        }
     }
 
     /// <summary>
@@ -73,6 +85,7 @@ public class TerrainGeneration : MonoBehaviour
                         // Unload bottom chunks
                         if (y == 0)
                         {
+                            Debug.Log("Disable");
                             // Unload these
                             array[x, y].DisableChunk();
                             array[x, y] = array[x, y + 1];
@@ -80,6 +93,7 @@ public class TerrainGeneration : MonoBehaviour
                         // Generate new chunks at the top or load if they were generated
                         else if (y == array.GetUpperBound(1))
                         {
+                            Debug.Log("New chunk");
                             if (array[x, y - 1].GetNeighbour(Direction.UP) == null)
                             {
                                 var chunkUnderPosition = array[x, y - 1].transform.position;
@@ -104,25 +118,35 @@ public class TerrainGeneration : MonoBehaviour
                 break;
 
 
-            case Direction.LEFT:
+            case Direction.RIGHT:
 
                 // Go throught chunks from top to bottom
                 for (int x = 0; x <= array.GetUpperBound(0); x++)
                 {
                     for (int y = 0; y <= array.GetUpperBound(1); y++)
                     {
-                        // Generate new chunks at the bottom
+                        // Unloads chunks at the left side
                         if (x == 0)
                         {
-                            // Unload these
-                            //array[x, y].UNLOAD();
+                            array[x, y].DisableChunk();
                             array[x, y] = array[x + 1, y];
                         }
-                        // Unload chunks at the top
+                        // Generate new ones at the right or load old ones
                         else if (x == array.GetUpperBound(0))
                         {
-                            //array[x, y].GENERATE();
-                            array[x, y] = null;
+                            if (array[x - 1, y].GetNeighbour(Direction.RIGHT) == null)
+                            {
+                                var chunkOnLeftPosition = array[x - 1, y].transform.position;
+                                var noiseOffset = array[x - 1, y].noiseOffset;
+
+                                array[x, y] = Instantiate(terrainChunkPrefab, new Vector3(chunkOnLeftPosition.x + chunkSize, 0, chunkOnLeftPosition.z), Quaternion.identity).GetComponent<TerrainChunk>();
+                                array[x, y].GenerateChunk(chunkSize, noiseScale, new Vector2(noiseOffset.x + noiseScale, noiseOffset.y));
+                            }
+                            else
+                            {
+                                array[x, y] = array[x - 1, y].GetNeighbour(Direction.RIGHT);
+                                array[x, y].LoadChunk();
+                            }
                         }
                         else
                         {
@@ -170,23 +194,35 @@ public class TerrainGeneration : MonoBehaviour
                     }
                 }
                 break;
-            case Direction.RIGHT:
+
+            case Direction.LEFT:
 
                 for (int x = array.GetUpperBound(0); x >= 0; x--)
                 {
                     for (int y = 0; y <= array.GetUpperBound(1); y++)
                     {
-                        // Generate new chunks at the bottom
+                        // Generate new chunks at left or load old ones
                         if (x == 0)
                         {
-                            //array[x, y].GENERATE();
-                            array[x, y] = null;
+                            if (array[x + 1, y].GetNeighbour(Direction.LEFT) == null)
+                            {
+                                var chunkOnRightPosition = array[x + 1, y].transform.position;
+                                var noiseOffset = array[x + 1, y].noiseOffset;
+
+                                array[x, y] = Instantiate(terrainChunkPrefab, new Vector3(chunkOnRightPosition.x - chunkSize, 0, chunkOnRightPosition.z), Quaternion.identity).GetComponent<TerrainChunk>();
+                                array[x, y].GenerateChunk(chunkSize, noiseScale, new Vector2(noiseOffset.x - noiseScale, noiseOffset.y));
+                            }
+                            else
+                            {
+                                array[x, y] = array[x + 1, y].GetNeighbour(Direction.LEFT);
+                                array[x, y].LoadChunk();
+                            }
                         }
-                        // Unload chunks at the top
+                        // Disable chunks on right
                         else if (x == array.GetUpperBound(0))
                         {
                             // Unload these
-                            //array[x, y].UNLOAD();
+                            array[x, y].DisableChunk();
                             array[x, y] = array[x - 1, y];
                         }
                         else

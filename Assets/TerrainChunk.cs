@@ -15,16 +15,32 @@ public class TerrainChunk : MonoBehaviour
     int chunkSize;
     float scale;
     
+    /// <summary>
+    /// Get neighbouring chunk in given direction
+    /// </summary>
+    /// <param name="direction">Direction of neighbouring chunk</param>
+    /// <returns>Neighbouring chunk in the requested direction or null</returns>
     public TerrainChunk GetNeighbour(Direction direction)
     {
         return neighbours[(int)direction];
     }
 
+    /// <summary>
+    /// Sets neighbouring chunk
+    /// </summary>
+    /// <param name="direction">Where is neighbouring chunk</param>
+    /// <param name="chunk">Neighbouring chunk</param>
     public void SetNeighbour(Direction direction, TerrainChunk chunk)
     {
         neighbours[(int)direction] = chunk;
     }
 
+    /// <summary>
+    /// Generates heightmap and blocks for this chunk
+    /// </summary>
+    /// <param name="size">Size of chunk</param>
+    /// <param name="noiseScale">Scale of perlin noise</param>
+    /// <param name="noiseOffset">Offset of perlin noise</param>
     public void GenerateChunk(int size, float noiseScale, Vector2 noiseOffset)
     {
         this.chunkSize = size;
@@ -35,6 +51,10 @@ public class TerrainChunk : MonoBehaviour
         LoadChunk();
     }
 
+    /// <summary>
+    /// Generates heightmap for chunk using PerlinNoise
+    /// </summary>
+    /// <returns></returns>
     private Texture2D GenerateHeightMap()
     {
         var texture = new Texture2D(chunkSize, chunkSize);
@@ -51,6 +71,12 @@ public class TerrainChunk : MonoBehaviour
         return texture;
     }
 
+    /// <summary>
+    /// Perlin noise represented by color
+    /// </summary>
+    /// <param name="x">X position on the chunk</param>
+    /// <param name="y">Y position on the chunk</param>
+    /// <returns></returns>
     private Color GetNoise(float x, float y)
     {
         var xCoord = (x / chunkSize) * scale + noiseOffset.x;
@@ -61,17 +87,24 @@ public class TerrainChunk : MonoBehaviour
         return new Color(noise, noise, noise);
     }
 
+    /// <summary>
+    /// Disables blocks of the chunk
+    /// </summary>
     public void DisableChunk()
     {
         for (int i = 0; i < transform.childCount; i++)
         {
             var cube = transform.GetChild(i).gameObject;
-            Destroy(cube);
+            BlocksPool.instance.GiveBlockToPool(cube, BlockType.DirtGrass);
         }
     }
 
+    /// <summary>
+    /// Loads chunk from heightmap
+    /// </summary>
     public void LoadChunk()
     {
+        var time = Time.realtimeSinceStartup;
         if (!heightMap)
             Debug.LogError("No heightMap present, cannot generate cubes");
 
@@ -84,17 +117,23 @@ public class TerrainChunk : MonoBehaviour
                 var height = GetBlockHeight(x, y);
 
                 var position = new Vector3(transform.position.x + x, height, transform.position.z + y);
-                var block = Instantiate(cube, position, Quaternion.identity, this.gameObject.transform);
+
+                var block = BlocksPool.instance.GetBlockFromPool(BlockType.DirtGrass);
+                block.transform.position = position;
+                block.transform.parent = this.transform;
 
                 var blockUnderCount = BlocksUnder(x, y, height);
 
                 for (int i = 0; i < blockUnderCount; i++)
                 {
                     position.y--;
-                    Instantiate(cube, position, Quaternion.identity, this.gameObject.transform);
+                    block = BlocksPool.instance.GetBlockFromPool(BlockType.DirtGrass);
+                    block.transform.position = position;
+                    block.transform.parent = this.transform;
                 }
             }
         }
+        Debug.Log("Loading time" + (Time.realtimeSinceStartup - time));
     }
 
     /// <summary>

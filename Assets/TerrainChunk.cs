@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum ChunkNeighbour{ UP, RIGHT, DOWN, LEFT};
+public enum Direction{ UP, RIGHT, DOWN, LEFT};
 public class TerrainChunk : MonoBehaviour
 {
     public int maxChunkHeight;
@@ -11,16 +11,16 @@ public class TerrainChunk : MonoBehaviour
     
     TerrainChunk[] neighbours = new TerrainChunk[4];
 
-    Vector2 noiseOffset;    
+    public Vector2 noiseOffset { get; private set; }
     int chunkSize;
     float scale;
     
-    public TerrainChunk GetNeighbour(ChunkNeighbour direction)
+    public TerrainChunk GetNeighbour(Direction direction)
     {
         return neighbours[(int)direction];
     }
 
-    public void SetNeighbour(ChunkNeighbour direction, TerrainChunk chunk)
+    public void SetNeighbour(Direction direction, TerrainChunk chunk)
     {
         neighbours[(int)direction] = chunk;
     }
@@ -53,25 +53,24 @@ public class TerrainChunk : MonoBehaviour
 
     private Color GetNoise(float x, float y)
     {
-        var xCoord = x / chunkSize * scale + noiseOffset.x;
-        var yCoord = y / chunkSize * scale + noiseOffset.y;
+        var xCoord = (x / chunkSize) * scale + noiseOffset.x;
+        var yCoord = (y / chunkSize) * scale + noiseOffset.y;
 
         var noise = Mathf.PerlinNoise(xCoord, yCoord);
 
         return new Color(noise, noise, noise);
     }
 
-    void GenerateNeighbour(ChunkNeighbour neighbour)
+    public void DisableChunk()
     {
-
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            var cube = transform.GetChild(i).gameObject;
+            Destroy(cube);
+        }
     }
 
-    void SaveChunk()
-    {
-        // From quads to height map
-    }
-
-    void LoadChunk()
+    public void LoadChunk()
     {
         if (!heightMap)
             Debug.LogError("No heightMap present, cannot generate cubes");

@@ -95,7 +95,7 @@ public class TerrainChunk : MonoBehaviour
         for (int i = 0; i < transform.childCount; i++)
         {
             var cube = transform.GetChild(i).gameObject;
-            BlocksPool.instance.GiveBlockToPool(cube, BlockType.DirtGrass);
+            BlocksPool.instance.GiveBlockToPool(cube, cube.GetComponent<Block>().properties.blockType);
         }
     }
 
@@ -114,20 +114,24 @@ public class TerrainChunk : MonoBehaviour
         {
             for (int y = 0; y < chunkSize; y++)
             {
+                // Get floored height, position in world and block type based on height
                 var height = GetBlockHeight(x, y);
-
                 var position = new Vector3(transform.position.x + x, height, transform.position.z + y);
-
-                var block = BlocksPool.instance.GetBlockFromPool(BlockType.DirtGrass);
+                var blockType = TerrainGeneration.instance.BlockTypeOnHeight(height, maxChunkHeight, true);
+                                
+                var block = BlocksPool.instance.GetBlockFromPool(blockType);
                 block.transform.position = position;
                 block.transform.parent = this.transform;
 
+                // Calculate number of block to generate under current one to fill gap
                 var blockUnderCount = BlocksUnder(x, y, height);
 
                 for (int i = 0; i < blockUnderCount; i++)
                 {
                     position.y--;
-                    block = BlocksPool.instance.GetBlockFromPool(BlockType.DirtGrass);
+                    blockType = TerrainGeneration.instance.BlockTypeOnHeight((int)position.y, maxChunkHeight, false);
+
+                    block = BlocksPool.instance.GetBlockFromPool(blockType);
                     block.transform.position = position;
                     block.transform.parent = this.transform;
                 }

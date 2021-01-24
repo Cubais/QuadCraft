@@ -24,6 +24,9 @@ public class TerrainGeneration : MonoBehaviour
 
     TerrainChunk[,] terrainChunks;
 
+    BlockProperties[] blockProperties;
+    BlockProperties lastBlockRequested;
+
     float time;
     private void Awake()
     {
@@ -33,6 +36,14 @@ public class TerrainGeneration : MonoBehaviour
         if (!instance)
         {
             instance = this;
+        }
+
+        var blocks = Resources.LoadAll<BlockProperties>("BlockTypes/");
+        blockProperties = new BlockProperties[blocks.Length];
+
+        foreach (var item in blocks)
+        {
+            blockProperties[(int)item.blockType] = item;
         }
     }
 
@@ -307,6 +318,44 @@ public class TerrainGeneration : MonoBehaviour
                     chunks[x, y].SetNeighbour(Direction.DOWN, chunks[x, y - 1]);
                 }
             }
+        }
+    }
+
+    public BlockProperties GetBlockProperties(BlockType type)
+    {
+        return blockProperties[(int)type];
+    }
+
+    /// <summary>
+    /// Get BlockType based on height in the world
+    /// </summary>
+    /// <param name="height">Height of the block</param>
+    /// <param name="maxChunkHeight">MaxHeight in the chunk</param>
+    /// <param name="topBlock">Is this top block?</param>
+    /// <returns>BlockType based on given height</returns>
+    public BlockType BlockTypeOnHeight(int height, float maxChunkHeight, bool topBlock)
+    {
+        var blockPositionHeightRatio = height / maxChunkHeight;
+
+        // It's very likely that we request the same type of block as in previous request
+        if (lastBlockRequested && lastBlockRequested.WithinHeightRange(blockPositionHeightRatio))
+        {
+            return (topBlock) ? lastBlockRequested.blockType : lastBlockRequested.blockUnderType;
+        }
+        else
+        {
+            // Find appropriate block
+            foreach (var block in blockProperties)
+            {
+                if (block.WithinHeightRange(blockPositionHeightRatio))
+                {
+                    lastBlockRequested = block;
+                    return (topBlock) ? block.blockType : block.blockUnderType;
+                }
+            }
+
+            Debug.LogError("Didn't find any suitable block type");
+            return BlockType.None;
         }
     }
 }

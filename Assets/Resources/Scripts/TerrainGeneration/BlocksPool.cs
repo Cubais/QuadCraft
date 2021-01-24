@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum BlockType{Dirt, DirtGrass, Stone, StoneSnow, Sand, Ice}
+public enum BlockType {Dirt, DirtGrass, Stone, StoneSnow, Sand, Ice, None}
 
 /// <summary>
 /// Class representing Object Pool, which handles lazy creation of blocks
@@ -15,7 +15,7 @@ public class BlocksPool : MonoBehaviour
     /// We have one set per block type, representing available blocks of that type
     /// </summary>
     HashSet<GameObject>[] availableBlocksSet = new HashSet<GameObject>[6];
-
+    
     void Awake()
     {
         if (instance == null)
@@ -57,9 +57,10 @@ public class BlocksPool : MonoBehaviour
         }
 
         // Don't have requested block available, create one
-        var cube = Resources.Load<GameObject>("Prefabs/Quad");
+        var block = Resources.Load<GameObject>("Prefabs/Block");
+        block.GetComponent<Block>().properties = GetBlockProperties(blockType);
 
-        return Instantiate(cube);
+        return Instantiate(block);
     }
 
     /// <summary>
@@ -71,5 +72,10 @@ public class BlocksPool : MonoBehaviour
     {
         block.SetActive(false);
         availableBlocksSet[(int)type].Add(block);
+    }
+
+    BlockProperties GetBlockProperties(BlockType type)
+    {
+        return TerrainGeneration.instance.GetBlockProperties(type);
     }
 }

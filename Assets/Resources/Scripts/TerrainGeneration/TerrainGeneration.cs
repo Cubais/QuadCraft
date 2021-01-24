@@ -47,10 +47,15 @@ public class TerrainGeneration : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        GenerateTerrain();
+    }
+
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.N))
+        /*if (Input.GetKeyDown(KeyCode.N))
         {            
             GenerateTerrain();
         }
@@ -73,7 +78,7 @@ public class TerrainGeneration : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.L))
         {
             CreateChunkSpace(ref terrainChunks, Direction.RIGHT);
-        }
+        }*/
     }
 
     /// <summary>

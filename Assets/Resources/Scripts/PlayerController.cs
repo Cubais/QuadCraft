@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour, IPLayerInput
 {
-    public bool selfControlled = false;
+    public Transform cameraObject;
+    public float moveSpeed = 2.0f;
+    public float rotationSpeed = 2.0f;
 
     Rigidbody rigid;
-    Vector3 moveDirection = Vector3.zero;
-    bool canJump = false;
-    public float speed = 2.0f;
-    float height = 0;
+
+    Vector3 moveDirection = Vector3.zero;    
 
     // Start is called before the first frame update
     void Start()
@@ -18,41 +18,13 @@ public class PlayerController : MonoBehaviour, IPLayerInput
         rigid = GetComponent<Rigidbody>();
     }
 
-    void Update()
-    {
-        if (selfControlled)
-        {
-            rigid.MovePosition(transform.position + Vector3.forward * speed * Time.deltaTime);
-        }
-
-        if (canJump)
-        {
-            Jump();
-            canJump = false;
-        }
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {        
-        // First trigger detects
-        if (other.CompareTag("Ground") && !canJump)
-        {
-            canJump = true;                        
-        }
-        // Second trigger detects, switch off canJump, because 2 blocks are in front of player
-        else if (other.CompareTag("Ground") && canJump)
-        {
-            canJump = false;            
-        }
-    }
-
     public void Move(Vector2 moveValue)
     {
         if (moveValue == Vector2.zero)
             return;
 
-        var moveVector = new Vector3(moveValue.x, 0, moveValue.y);
-        moveVector *= speed * Time.deltaTime;
+        var moveVector = transform.forward * moveValue.y + transform.right * moveValue.x;
+        moveVector *= moveSpeed * Time.deltaTime;
 
         rigid.MovePosition(transform.position + moveVector);
     }
@@ -60,5 +32,24 @@ public class PlayerController : MonoBehaviour, IPLayerInput
     public void Jump()
     {
         rigid.AddForce(Vector3.up * 5.2f, ForceMode.Impulse);
+    }
+
+    public void Rotate(Vector2 rotation)
+    {
+        if (rotation == Vector2.zero)
+            return;
+        var minViewAngle = InputManager.instance.minViewAngle;
+        var maxViewAngle = InputManager.instance.maxViewAngle;
+
+        var playerRoatation = rotation.x * rotationSpeed * Time.deltaTime;
+
+        this.transform.Rotate(0, playerRoatation, 0);
+
+        var cameraRotation = rotation.y * rotationSpeed * Time.deltaTime;
+        var rot = cameraObject.rotation.eulerAngles + new Vector3(cameraRotation, 0, 0);
+        rot.x = (rot.x < minViewAngle) ? minViewAngle : rot.x;
+        rot.x = (rot.x > maxViewAngle) ? maxViewAngle : rot.x;
+
+        cameraObject.eulerAngles = rot;
     }
 }

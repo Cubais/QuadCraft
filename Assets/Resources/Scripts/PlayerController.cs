@@ -4,52 +4,55 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour, IPLayerInput
 {
-    public Transform cameraObject;
-    public float moveSpeed = 2.0f;
-    public float rotationSpeed = 2.0f;
+    public float speed = 2f;
+    public float rotationSpeed = 100f;
+    public float gravity = -9.81f;
+    public float jumpHeight = 1.5f;
+    public Transform cameraTransform;
 
-    Rigidbody rigid;
-
-    Vector3 moveDirection = Vector3.zero;    
-
+    private float pitchRotation = 0;
+    private CharacterController controller;
+    private Vector3 velocity;
     // Start is called before the first frame update
     void Start()
     {
-        rigid = GetComponent<Rigidbody>();
+        controller = GetComponent<CharacterController>();
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
-    public void Move(Vector2 moveValue)
+    // Update is called once per frame
+    void Update()
     {
-        if (moveValue == Vector2.zero)
-            return;
+        if (controller.isGrounded && velocity.y < 0)
+        {
+            velocity.y = -2f;
+            Debug.Log("True");
+        }
 
-        var moveVector = transform.forward * moveValue.y + transform.right * moveValue.x;
-        moveVector *= moveSpeed * Time.deltaTime;
-
-        rigid.MovePosition(transform.position + moveVector);
+        velocity.y += gravity * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
     }
 
     public void Jump()
     {
-        rigid.AddForce(Vector3.up * 5.2f, ForceMode.Impulse);
+        velocity.y = Mathf.Sqrt(jumpHeight * -2 * gravity);
+    }
+
+    public void Move(Vector2 moveValue)
+    {
+        var move = transform.right * moveValue.x + transform.forward * moveValue.y;
+        controller.Move(move * speed * Time.deltaTime);
     }
 
     public void Rotate(Vector2 rotation)
     {
-        if (rotation == Vector2.zero)
-            return;
-        var minViewAngle = InputManager.instance.minViewAngle;
-        var maxViewAngle = InputManager.instance.maxViewAngle;
+        var rotX = rotation.x * rotationSpeed * Time.deltaTime;
+        var rotY = rotation.y * rotationSpeed * Time.deltaTime;
 
-        var playerRoatation = rotation.x * rotationSpeed * Time.deltaTime;
+        pitchRotation -= rotY;
+        pitchRotation = Mathf.Clamp(pitchRotation, -60, 80);
 
-        this.transform.Rotate(0, playerRoatation, 0);
-
-        var cameraRotation = rotation.y * rotationSpeed * Time.deltaTime;
-        var rot = cameraObject.rotation.eulerAngles + new Vector3(cameraRotation, 0, 0);
-        rot.x = (rot.x < minViewAngle) ? minViewAngle : rot.x;
-        rot.x = (rot.x > maxViewAngle) ? maxViewAngle : rot.x;
-
-        cameraObject.eulerAngles = rot;
+        cameraTransform.localRotation = Quaternion.Euler(pitchRotation, 0f, 0f);
+        transform.Rotate(Vector3.up * rotX);        
     }
 }

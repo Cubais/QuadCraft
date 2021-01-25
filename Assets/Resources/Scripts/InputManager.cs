@@ -25,9 +25,7 @@ public class InputManager : MonoBehaviour
         if (!instance)
         {
             instance = this;
-        }
-
-        player = playerObject.GetComponent<IPLayerInput>();
+        }        
     }
 
     // Update is called once per frame
@@ -46,6 +44,11 @@ public class InputManager : MonoBehaviour
             player.Jump();
         }
         
+    }
+
+    public void SetPlayer(IPLayerInput player)
+    {
+        this.player = player;
     }
 
     private void HandleInput()

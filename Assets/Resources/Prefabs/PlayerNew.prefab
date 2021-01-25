@@ -64,10 +64,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 352311a7d48ec3c40adf396120f232ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 2
+  speed: 5
   rotationSpeed: 100
   gravity: -9.81
-  jumpHeight: 1.5
+  jumpHeight: 1
   cameraTransform: {fileID: 4981027231837777403}
 --- !u!1 &4981027231654672648
 GameObject:

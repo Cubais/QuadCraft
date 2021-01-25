@@ -27,6 +27,8 @@ public class TerrainGeneration : MonoBehaviour
     BlockProperties[] blockProperties;
     BlockProperties lastBlockRequested;
 
+    GameObject player;
+
     float time;
     private void Awake()
     {
@@ -49,7 +51,8 @@ public class TerrainGeneration : MonoBehaviour
 
     private void Start()
     {
-        GenerateTerrain();
+        player = GameManager.instance.GetPlayer();
+        StartCoroutine(ShiftTerrainOnPlayerPosition());
     }
 
     // Update is called once per frame
@@ -84,9 +87,9 @@ public class TerrainGeneration : MonoBehaviour
     /// <summary>
     /// Shifts map of chunks and load new ones in the given direction, unload old ones
     /// </summary>
-    /// <param name="array">Array of chunks</param>
+    /// <param name="terrainChunks">Array of chunks</param>
     /// <param name="direction">Directions where to load new chunks</param>
-    void CreateChunkSpace(ref TerrainChunk[,] array, Direction direction)
+    void CreateChunkSpace(Direction direction)
     {
         switch (direction)
         {
@@ -94,39 +97,39 @@ public class TerrainGeneration : MonoBehaviour
             case Direction.UP:
 
                 // GO throught chunks from bottom to the top
-                for (int y = 0; y <= array.GetUpperBound(1); y++)
+                for (int y = 0; y <= terrainChunks.GetUpperBound(1); y++)
                 {
-                    for (int x = 0; x <= array.GetUpperBound(0); x++)
+                    for (int x = 0; x <= terrainChunks.GetUpperBound(0); x++)
                     {
                         // Unload bottom chunks
                         if (y == 0)
                         {
                             Debug.Log("Disable");
                             // Unload these
-                            array[x, y].DisableChunk();
-                            array[x, y] = array[x, y + 1];
+                            terrainChunks[x, y].DisableChunk();
+                            terrainChunks[x, y] = terrainChunks[x, y + 1];
                         }
                         // Generate new chunks at the top or load if they were generated
-                        else if (y == array.GetUpperBound(1))
+                        else if (y == terrainChunks.GetUpperBound(1))
                         {
                             Debug.Log("New chunk");
-                            if (array[x, y - 1].GetNeighbour(Direction.UP) == null)
+                            if (terrainChunks[x, y - 1].GetNeighbour(Direction.UP) == null)
                             {
-                                var chunkUnderPosition = array[x, y - 1].transform.position;
-                                var noiseOffset = array[x, y - 1].noiseOffset;
+                                var chunkUnderPosition = terrainChunks[x, y - 1].transform.position;
+                                var noiseOffset = terrainChunks[x, y - 1].noiseOffset;
 
-                                array[x, y] = Instantiate(terrainChunkPrefab, new Vector3(chunkUnderPosition.x, 0, chunkUnderPosition.z + chunkSize), Quaternion.identity).GetComponent<TerrainChunk>();
-                                array[x, y].GenerateChunk(chunkSize, noiseScale, new Vector2(noiseOffset.x, noiseOffset.y + noiseScale));
+                                terrainChunks[x, y] = Instantiate(terrainChunkPrefab, new Vector3(chunkUnderPosition.x, 0, chunkUnderPosition.z + chunkSize), Quaternion.identity).GetComponent<TerrainChunk>();
+                                terrainChunks[x, y].GenerateChunk(chunkSize, noiseScale, new Vector2(noiseOffset.x, noiseOffset.y + noiseScale));
                             }
                             else
                             {
-                                array[x, y] = array[x, y - 1].GetNeighbour(Direction.UP);
-                                array[x, y].LoadChunk();
+                                terrainChunks[x, y] = terrainChunks[x, y - 1].GetNeighbour(Direction.UP);
+                                terrainChunks[x, y].LoadChunk();
                             }
                         }
                         else
                         {
-                            array[x, y] = array[x, y + 1];
+                            terrainChunks[x, y] = terrainChunks[x, y + 1];
                         }
                     }
                 }
@@ -137,36 +140,36 @@ public class TerrainGeneration : MonoBehaviour
             case Direction.RIGHT:
 
                 // Go throught chunks from top to bottom
-                for (int x = 0; x <= array.GetUpperBound(0); x++)
+                for (int x = 0; x <= terrainChunks.GetUpperBound(0); x++)
                 {
-                    for (int y = 0; y <= array.GetUpperBound(1); y++)
+                    for (int y = 0; y <= terrainChunks.GetUpperBound(1); y++)
                     {
                         // Unloads chunks at the left side
                         if (x == 0)
                         {
-                            array[x, y].DisableChunk();
-                            array[x, y] = array[x + 1, y];
+                            terrainChunks[x, y].DisableChunk();
+                            terrainChunks[x, y] = terrainChunks[x + 1, y];
                         }
                         // Generate new ones at the right or load old ones
-                        else if (x == array.GetUpperBound(0))
+                        else if (x == terrainChunks.GetUpperBound(0))
                         {
-                            if (array[x - 1, y].GetNeighbour(Direction.RIGHT) == null)
+                            if (terrainChunks[x - 1, y].GetNeighbour(Direction.RIGHT) == null)
                             {
-                                var chunkOnLeftPosition = array[x - 1, y].transform.position;
-                                var noiseOffset = array[x - 1, y].noiseOffset;
+                                var chunkOnLeftPosition = terrainChunks[x - 1, y].transform.position;
+                                var noiseOffset = terrainChunks[x - 1, y].noiseOffset;
 
-                                array[x, y] = Instantiate(terrainChunkPrefab, new Vector3(chunkOnLeftPosition.x + chunkSize, 0, chunkOnLeftPosition.z), Quaternion.identity).GetComponent<TerrainChunk>();
-                                array[x, y].GenerateChunk(chunkSize, noiseScale, new Vector2(noiseOffset.x + noiseScale, noiseOffset.y));
+                                terrainChunks[x, y] = Instantiate(terrainChunkPrefab, new Vector3(chunkOnLeftPosition.x + chunkSize, 0, chunkOnLeftPosition.z), Quaternion.identity).GetComponent<TerrainChunk>();
+                                terrainChunks[x, y].GenerateChunk(chunkSize, noiseScale, new Vector2(noiseOffset.x + noiseScale, noiseOffset.y));
                             }
                             else
                             {
-                                array[x, y] = array[x - 1, y].GetNeighbour(Direction.RIGHT);
-                                array[x, y].LoadChunk();
+                                terrainChunks[x, y] = terrainChunks[x - 1, y].GetNeighbour(Direction.RIGHT);
+                                terrainChunks[x, y].LoadChunk();
                             }
                         }
                         else
                         {
-                            array[x, y] = array[x + 1, y];
+                            terrainChunks[x, y] = terrainChunks[x + 1, y];
                         }
                     }
                 }
@@ -175,37 +178,37 @@ public class TerrainGeneration : MonoBehaviour
             case Direction.DOWN:
 
                 // Go throught chunks from top to bottom
-                for (int y = array.GetUpperBound(1); y >= 0; y--)
+                for (int y = terrainChunks.GetUpperBound(1); y >= 0; y--)
                 {
-                    for (int x = 0; x <= array.GetUpperBound(0); x++)
+                    for (int x = 0; x <= terrainChunks.GetUpperBound(0); x++)
                     {
                         // Generate new chunks at the bottom
                         if (y == 0)
                         {
-                            if (array[x, y + 1].GetNeighbour(Direction.DOWN) == null)
+                            if (terrainChunks[x, y + 1].GetNeighbour(Direction.DOWN) == null)
                             {
-                                var chunkAbovePosition = array[x, y + 1].transform.position;
-                                var noiseOffset = array[x, y + 1].noiseOffset;
+                                var chunkAbovePosition = terrainChunks[x, y + 1].transform.position;
+                                var noiseOffset = terrainChunks[x, y + 1].noiseOffset;
 
-                                array[x, y] = Instantiate(terrainChunkPrefab, new Vector3(chunkAbovePosition.x, 0, chunkAbovePosition.z - chunkSize), Quaternion.identity).GetComponent<TerrainChunk>();
-                                array[x, y].GenerateChunk(chunkSize, noiseScale, new Vector2(noiseOffset.x, noiseOffset.y - noiseScale));
+                                terrainChunks[x, y] = Instantiate(terrainChunkPrefab, new Vector3(chunkAbovePosition.x, 0, chunkAbovePosition.z - chunkSize), Quaternion.identity).GetComponent<TerrainChunk>();
+                                terrainChunks[x, y].GenerateChunk(chunkSize, noiseScale, new Vector2(noiseOffset.x, noiseOffset.y - noiseScale));
                             }
                             else
                             {
-                                array[x, y] = array[x, y + 1].GetNeighbour(Direction.DOWN);
-                                array[x, y].LoadChunk();
+                                terrainChunks[x, y] = terrainChunks[x, y + 1].GetNeighbour(Direction.DOWN);
+                                terrainChunks[x, y].LoadChunk();
                             }
                         }
                         // Unload chunks at the top
-                        else if (y == array.GetUpperBound(1))
+                        else if (y == terrainChunks.GetUpperBound(1))
                         {
                             // Unload these
-                            array[x, y].DisableChunk();
-                            array[x, y] = array[x, y - 1];
+                            terrainChunks[x, y].DisableChunk();
+                            terrainChunks[x, y] = terrainChunks[x, y - 1];
                         }
                         else
                         {
-                            array[x, y] = array[x, y - 1];
+                            terrainChunks[x, y] = terrainChunks[x, y - 1];
                         }
                     }
                 }
@@ -213,37 +216,37 @@ public class TerrainGeneration : MonoBehaviour
 
             case Direction.LEFT:
 
-                for (int x = array.GetUpperBound(0); x >= 0; x--)
+                for (int x = terrainChunks.GetUpperBound(0); x >= 0; x--)
                 {
-                    for (int y = 0; y <= array.GetUpperBound(1); y++)
+                    for (int y = 0; y <= terrainChunks.GetUpperBound(1); y++)
                     {
                         // Generate new chunks at left or load old ones
                         if (x == 0)
                         {
-                            if (array[x + 1, y].GetNeighbour(Direction.LEFT) == null)
+                            if (terrainChunks[x + 1, y].GetNeighbour(Direction.LEFT) == null)
                             {
-                                var chunkOnRightPosition = array[x + 1, y].transform.position;
-                                var noiseOffset = array[x + 1, y].noiseOffset;
+                                var chunkOnRightPosition = terrainChunks[x + 1, y].transform.position;
+                                var noiseOffset = terrainChunks[x + 1, y].noiseOffset;
 
-                                array[x, y] = Instantiate(terrainChunkPrefab, new Vector3(chunkOnRightPosition.x - chunkSize, 0, chunkOnRightPosition.z), Quaternion.identity).GetComponent<TerrainChunk>();
-                                array[x, y].GenerateChunk(chunkSize, noiseScale, new Vector2(noiseOffset.x - noiseScale, noiseOffset.y));
+                                terrainChunks[x, y] = Instantiate(terrainChunkPrefab, new Vector3(chunkOnRightPosition.x - chunkSize, 0, chunkOnRightPosition.z), Quaternion.identity).GetComponent<TerrainChunk>();
+                                terrainChunks[x, y].GenerateChunk(chunkSize, noiseScale, new Vector2(noiseOffset.x - noiseScale, noiseOffset.y));
                             }
                             else
                             {
-                                array[x, y] = array[x + 1, y].GetNeighbour(Direction.LEFT);
-                                array[x, y].LoadChunk();
+                                terrainChunks[x, y] = terrainChunks[x + 1, y].GetNeighbour(Direction.LEFT);
+                                terrainChunks[x, y].LoadChunk();
                             }
                         }
                         // Disable chunks on right
-                        else if (x == array.GetUpperBound(0))
+                        else if (x == terrainChunks.GetUpperBound(0))
                         {
                             // Unload these
-                            array[x, y].DisableChunk();
-                            array[x, y] = array[x - 1, y];
+                            terrainChunks[x, y].DisableChunk();
+                            terrainChunks[x, y] = terrainChunks[x - 1, y];
                         }
                         else
                         {
-                            array[x, y] = array[x - 1, y];
+                            terrainChunks[x, y] = terrainChunks[x - 1, y];
                         }
                     }
                 }
@@ -252,10 +255,10 @@ public class TerrainGeneration : MonoBehaviour
                 break;
         }
 
-        SetChunkNeighbours(terrainChunks);
+        SetChunkNeighbours(this.terrainChunks);
     }
 
-    void GenerateTerrain()
+    public void GenerateTerrain()
     {
         time = Time.realtimeSinceStartup;
 
@@ -361,6 +364,64 @@ public class TerrainGeneration : MonoBehaviour
 
             Debug.LogError("Didn't find any suitable block type");
             return BlockType.None;
+        }
+    }
+
+    /// <summary>
+    /// Check player position and shifts array if on the edge
+    /// </summary>    
+    IEnumerator ShiftTerrainOnPlayerPosition()
+    {
+        while (!player)
+        {
+            Debug.Log("No player");
+            player = GameManager.instance.GetPlayer();
+            yield return new WaitForEndOfFrame();
+        }
+
+        while (player)
+        {
+            Debug.Log("Checking");
+
+            // Get the player distance from down-left corner of chunks
+            var xDif = player.transform.position.x - terrainChunks[0, 0].transform.position.x;
+            var zDif = player.transform.position.z - terrainChunks[0, 0].transform.position.z;
+
+            // Calculate position within chunks array
+            var xPos = Mathf.Floor(xDif / chunkSize);
+            var yPos = Mathf.Floor(zDif / chunkSize);
+
+            var shiftDirection = new List<Direction>();
+
+            // Look at which edge we are
+            if (xPos == 0)
+            {
+                shiftDirection.Add(Direction.LEFT);
+            }
+
+            if (xPos == terrainChunks.GetUpperBound(0))
+            {
+                shiftDirection.Add(Direction.RIGHT);
+            }
+
+            if (yPos == 0)
+            {
+                shiftDirection.Add(Direction.DOWN);
+            }
+
+            if (yPos == terrainChunks.GetUpperBound(1))
+            {
+                shiftDirection.Add(Direction.UP);
+            }
+
+            // Shift terrain in appropriate direction
+            foreach (var direction in shiftDirection)
+            {
+                CreateChunkSpace(direction);
+                yield return new WaitForEndOfFrame();
+            }
+
+            yield return new WaitForSeconds(3);
         }
     }
 }

@@ -57,7 +57,7 @@ public class BlocksPool : MonoBehaviour
         }
 
         // Don't have requested block available, create one
-        var block = Resources.Load<GameObject>("Prefabs/Block");
+        var block = Resources.Load<GameObject>("Prefabs/Blocks/Block");
         block.GetComponent<Block>().properties = GetBlockProperties(blockType);
 
         return Instantiate(block);

@@ -95,7 +95,7 @@ public class TerrainChunk : MonoBehaviour
         for (int i = 0; i < transform.childCount; i++)
         {
             var cube = transform.GetChild(i).gameObject;
-            BlocksPool.instance.GiveBlockToPool(cube, cube.GetComponent<Block>().properties.blockType);
+            BlocksPool.instance.GiveBlockToPool(cube);
         }
     }
 

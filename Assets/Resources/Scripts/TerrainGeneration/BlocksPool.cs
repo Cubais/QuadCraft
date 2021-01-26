@@ -68,10 +68,43 @@ public class BlocksPool : MonoBehaviour
     /// </summary>
     /// <param name="block">GameObject representing block</param>
     /// <param name="type">Type of block</param>
-    public void GiveBlockToPool(GameObject block, BlockType type)
+    public void GiveBlockToPool(GameObject block)
     {
+        var blockType = block.GetComponent<Block>().properties.blockType;
         block.SetActive(false);
-        availableBlocksSet[(int)type].Add(block);
+
+        availableBlocksSet[(int)blockType].Add(block);
+    }
+
+    public void CoverHoles(GameObject block)
+    {
+        var blockTransform = block.transform;
+        RaycastHit hit;
+        // Cover holes under removed block
+        if (!Physics.Raycast(block.transform.position, -block.transform.up, out hit, 30))
+        {
+            var newBlock = GetBlockFromPool(block.GetComponent<Block>().properties.blockType);
+            newBlock.transform.position = block.transform.position - block.transform.up;
+        }
+
+        var positions = new List<Vector3>();
+        positions.Add(block.transform.position + new Vector3(1, 1, 0));
+        positions.Add(block.transform.position + new Vector3(-1, 1, 0));
+        positions.Add(block.transform.position + new Vector3(0, 1, 1));
+        positions.Add(block.transform.position + new Vector3(0, 1, -1));
+
+        foreach (var position in positions)
+        {
+            var collisions = Physics.OverlapSphere(position, 0.2f);
+            if (collisions.Length > 0 && collisions[0].CompareTag("Ground"))
+            {
+                if (!Physics.Raycast(position, Vector3.down, 1))
+                {
+                    var newBlock = GetBlockFromPool(collisions[0].GetComponent<Block>().properties.blockUnderType);
+                    newBlock.transform.position = position + Vector3.down;
+                }
+            }
+        }
     }
 
     BlockProperties GetBlockProperties(BlockType type)

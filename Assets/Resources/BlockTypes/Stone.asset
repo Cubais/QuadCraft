@@ -16,5 +16,5 @@ MonoBehaviour:
   blockType: 2
   bottomGenerationLevel: 0.6
   topGenerationLevel: 0.7
-  destroyTime: 3
+  destroyTime: 0.5
   blockUnderType: 2

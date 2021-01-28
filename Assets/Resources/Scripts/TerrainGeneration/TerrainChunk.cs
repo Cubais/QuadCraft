@@ -95,9 +95,15 @@ public class TerrainChunk : MonoBehaviour
     /// </summary>
     public void DisableChunk()
     {
-        for (int i = 0; i < transform.childCount; i++)
+        for (int i = 0; i < groundBlocks.childCount; i++)
         {
-            var cube = transform.GetChild(i).gameObject;
+            var cube = groundBlocks.GetChild(i).gameObject;
+            BlocksPool.instance.GiveBlockToPool(cube);
+        }
+
+        for (int i = 0; i < invisibleBlocks.childCount; i++)
+        {
+            var cube = invisibleBlocks.GetChild(i).gameObject;
             BlocksPool.instance.GiveBlockToPool(cube);
         }
     }

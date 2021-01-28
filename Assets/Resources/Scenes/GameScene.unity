@@ -690,7 +690,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!108 &836811603
 Light:
   m_ObjectHideFlags: 0
@@ -2438,12 +2438,12 @@ PrefabInstance:
     - target: {fileID: 8106467959989684183, guid: dce84bb986c6498439696bc2809e90ba,
         type: 3}
       propertyPath: minViewAngle
-      value: -50
+      value: -90
       objectReference: {fileID: 0}
     - target: {fileID: 8106467959989684183, guid: dce84bb986c6498439696bc2809e90ba,
         type: 3}
       propertyPath: maxViewAngle
-      value: 80
+      value: 110
       objectReference: {fileID: 0}
     - target: {fileID: 8106467959989684183, guid: dce84bb986c6498439696bc2809e90ba,
         type: 3}

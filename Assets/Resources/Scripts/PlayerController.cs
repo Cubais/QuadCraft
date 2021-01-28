@@ -23,7 +23,7 @@ public class PlayerController : MonoBehaviour, IPLayerInput
     private bool buildingButtonPressed = false;
     private BlockType currentBlockToBuildType = BlockType.Dirt;
     private GameObject buildingModeBlock;
-    private GameObject destroyingModeBlock;
+    private GameObject destroyingModeBlock;    
 
     void Start()
     {
@@ -60,6 +60,7 @@ public class PlayerController : MonoBehaviour, IPLayerInput
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
     }
+
     #region Movement
 
     public void Jump()
@@ -146,12 +147,13 @@ public class PlayerController : MonoBehaviour, IPLayerInput
     IEnumerator MoveBuildingBlock()
     {
         buildingModeBlock.SetActive(true);
+        int playerMask =~ LayerMask.GetMask("Player");
 
         while (inBuildingMode && !inDestroyingMode)
         {
             var ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
             RaycastHit hit;
-            if (Physics.Raycast(ray, out hit, buildingModeRange))
+            if (Physics.Raycast(ray, out hit, buildingModeRange, playerMask))
             {
                 buildingModeBlock.SetActive(true);
 
@@ -184,6 +186,7 @@ public class PlayerController : MonoBehaviour, IPLayerInput
     IEnumerator MoveDestroyingBlock()
     {
         destroyingModeBlock.SetActive(true);
+        int playerMask = ~LayerMask.GetMask("Player");
 
         while (inBuildingMode && inDestroyingMode)
         {
@@ -191,8 +194,8 @@ public class PlayerController : MonoBehaviour, IPLayerInput
             var ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
             RaycastHit hit;
 
-            if (Physics.Raycast(ray, out hit, buildingModeRange))
-            {
+            if (Physics.Raycast(ray, out hit, buildingModeRange, playerMask))
+            {               
                 destroyingModeBlock.SetActive(true);
                 destroyingModeBlock.transform.position = hit.transform.position;
                 destroyingModeBlock.transform.rotation = Quaternion.Euler(0, 0, 0);
@@ -206,11 +209,11 @@ public class PlayerController : MonoBehaviour, IPLayerInput
                         StartCoroutine(currentDestroyingCoroutine);
                     }
                     // If we are in destroying process and we changed focus on another block, stop destroying
-                    else if(currentDestroyingBlock != hit.transform.gameObject)
+                    else if (currentDestroyingBlock != hit.transform.gameObject)
                     {
                         ResetDestroyingProcess();
                     }
-                }
+                }                
             }
             else
             {
@@ -252,7 +255,7 @@ public class PlayerController : MonoBehaviour, IPLayerInput
             if ((Time.realtimeSinceStartup - time) >= destroyTime)
             {
                 BlocksPool.instance.CoverHoles(blockToDestroy);
-                BlocksPool.instance.GiveBlockToPool(blockToDestroy);             
+                BlocksPool.instance.GiveBlockToPool(blockToDestroy);
                 break;
             }
             

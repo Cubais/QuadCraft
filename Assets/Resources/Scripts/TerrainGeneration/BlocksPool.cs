@@ -70,6 +70,11 @@ public class BlocksPool : MonoBehaviour
     /// <param name="type">Type of block</param>
     public void GiveBlockToPool(GameObject block)
     {
+        if (block == null || block.GetComponent<Block>() == null || block.GetComponent<Block>().properties == null)
+        {
+            Debug.Log("BAD");
+        }
+
         var blockType = block.GetComponent<Block>().properties.blockType;
         block.SetActive(false);
 
@@ -113,7 +118,7 @@ public class BlocksPool : MonoBehaviour
                 {
                     var newBlock = GetBlockFromPool(BlockType.Invisible);
                     newBlock.transform.position = block.transform.position + blockDirection + direction;
-                    //newBlock.transform.parent = inv
+                    newBlock.transform.parent = blocksToReplace[0].transform.parent;
                 }
             }
 

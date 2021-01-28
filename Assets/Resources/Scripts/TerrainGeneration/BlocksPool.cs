@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum BlockType {Dirt, DirtGrass, Stone, StoneSnow, Sand, Ice, None}
+public enum BlockType {Dirt, DirtGrass, Stone, StoneSnow, Sand, Ice, Invisible, None}
 
 /// <summary>
 /// Class representing Object Pool, which handles lazy creation of blocks
@@ -14,7 +14,7 @@ public class BlocksPool : MonoBehaviour
     /// <summary>
     /// We have one set per block type, representing available blocks of that type
     /// </summary>
-    HashSet<GameObject>[] availableBlocksSet = new HashSet<GameObject>[6];
+    HashSet<GameObject>[] availableBlocksSet = new HashSet<GameObject>[7];
     
     void Awake()
     {
@@ -76,35 +76,60 @@ public class BlocksPool : MonoBehaviour
         availableBlocksSet[(int)blockType].Add(block);
     }
 
+    /// <summary>
+    /// Dynamically creates terrain after destroyed block
+    /// </summary>
+    /// <param name="block">Block to be destroyed</param>
     public void CoverHoles(GameObject block)
     {
         var blockTransform = block.transform;
+        var blockTypeUnder = block.GetComponent<Block>().properties.blockUnderType;
         RaycastHit hit;
-        // Cover holes under removed block
-        if (!Physics.Raycast(block.transform.position, -block.transform.up, out hit, 30))
-        {
-            var newBlock = GetBlockFromPool(block.GetComponent<Block>().properties.blockType);
-            newBlock.transform.position = block.transform.position - block.transform.up;
-        }
 
-        var positions = new List<Vector3>();
-        positions.Add(block.transform.position + new Vector3(1, 1, 0));
-        positions.Add(block.transform.position + new Vector3(-1, 1, 0));
-        positions.Add(block.transform.position + new Vector3(0, 1, 1));
-        positions.Add(block.transform.position + new Vector3(0, 1, -1));
+        var allDirections = new Vector3[] { Vector3.down, Vector3.left, Vector3.right, Vector3.forward, Vector3.back, Vector3.up };
+        var directionsOfBlockReplace = new List<Vector3>();
+        var blocksToReplace = new List<GameObject>();
 
-        foreach (var position in positions)
+        // Find on which side are invisible blocks and we will need to cover holes
+        foreach (var direction in allDirections)
         {
-            var collisions = Physics.OverlapSphere(position, 0.2f);
-            if (collisions.Length > 0 && collisions[0].CompareTag("Ground"))
+            if (Physics.Raycast(block.transform.position, direction, out hit, 1))
             {
-                if (!Physics.Raycast(position, Vector3.down, 1))
+                var hittedGO = hit.collider.gameObject;
+                if (hittedGO.CompareTag("Ground") && hittedGO.GetComponent<Block>().properties.blockType == BlockType.Invisible)
                 {
-                    var newBlock = GetBlockFromPool(collisions[0].GetComponent<Block>().properties.blockUnderType);
-                    newBlock.transform.position = position + Vector3.down;
+                    directionsOfBlockReplace.Add(direction);
+                    blocksToReplace.Add(hittedGO);
                 }
             }
         }
+
+        // Generate invisible blocks inside of terrain to be able to cover holes in future
+        foreach (var blockDirection in directionsOfBlockReplace)
+        {
+            foreach (var direction in allDirections)
+            {
+                if (!Physics.Raycast(block.transform.position + blockDirection, direction, out hit, 1))
+                {
+                    var newBlock = GetBlockFromPool(BlockType.Invisible);
+                    newBlock.transform.position = block.transform.position + blockDirection + direction;
+                    //newBlock.transform.parent = inv
+                }
+            }
+
+            // Refresh physics to make Raycast work
+            Physics.SyncTransforms();
+        }
+
+        // Disable all invisible blocks and replace them with real ones
+        foreach (var invisibleBlock in blocksToReplace)
+        {
+            var newBlock = GetBlockFromPool(blockTypeUnder);
+            newBlock.transform.position = invisibleBlock.transform.position;
+            newBlock.transform.parent = block.transform.parent;
+
+            GiveBlockToPool(invisibleBlock);
+        }        
     }
 
     BlockProperties GetBlockProperties(BlockType type)

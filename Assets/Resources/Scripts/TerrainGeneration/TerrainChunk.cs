@@ -6,6 +6,9 @@ public enum Direction{ UP, RIGHT, DOWN, LEFT};
 public class TerrainChunk : MonoBehaviour
 {
     public int maxChunkHeight;
+    public Transform invisibleBlocks;
+    public Transform groundBlocks;
+
     // Representation of terrain chunk in height map
     public Texture2D heightMap { get; private set; }
     
@@ -103,13 +106,10 @@ public class TerrainChunk : MonoBehaviour
     /// Loads chunk from heightmap
     /// </summary>
     public void LoadChunk()
-    {
-        var time = Time.realtimeSinceStartup;
+    {        
         if (!heightMap)
             Debug.LogError("No heightMap present, cannot generate cubes");
-
-        var cube = Resources.Load<GameObject>("Prefabs/Quad");
-
+        
         for (int x = 0; x < chunkSize; x++)
         {
             for (int y = 0; y < chunkSize; y++)
@@ -118,13 +118,13 @@ public class TerrainChunk : MonoBehaviour
                 var height = GetBlockHeight(x, y);
                 var position = new Vector3(transform.position.x + x, height, transform.position.z + y);
                 var blockType = TerrainGeneration.instance.BlockTypeOnHeight(height, maxChunkHeight, true);
-                                
+                               
                 var block = BlocksPool.instance.GetBlockFromPool(blockType);
                 block.transform.position = position;
-                block.transform.parent = this.transform;
+                block.transform.parent = groundBlocks;
 
                 // Calculate number of block to generate under current one to fill gap
-                var blockUnderCount = BlocksUnder(x, y, height);
+                var blockUnderCount = BlocksUnder(x, y, height);                
 
                 for (int i = 0; i < blockUnderCount; i++)
                 {
@@ -133,11 +133,64 @@ public class TerrainChunk : MonoBehaviour
 
                     block = BlocksPool.instance.GetBlockFromPool(blockType);
                     block.transform.position = position;
-                    block.transform.parent = this.transform;
+                    block.transform.parent = groundBlocks;                    
+                }
+
+                if (!Physics.Raycast(position, Vector3.down, 1f))
+                {
+                    block = BlocksPool.instance.GetBlockFromPool(BlockType.Invisible);
+                    position.y--;
+                    block.transform.position = position;
+                    block.transform.parent = invisibleBlocks;
                 }
             }
         }
-        Debug.Log("Loading time" + (Time.realtimeSinceStartup - time));
+
+        Physics.SyncTransforms();
+
+        var blocksUnder = invisibleBlocks.transform.GetComponentsInChildren<Block>();
+        foreach (var block in blocksUnder)
+        {
+            //Debug.DrawRay(block.transform.position, Vector3.down, Color.blue, 1000f);
+            
+            bool createNextBlock = true;
+            var position = block.transform.position;
+
+            while(createNextBlock)
+            {
+                createNextBlock = false;
+                if (!Physics.Raycast(position, Vector3.down, 1f))
+                {
+                    if (IsBlockInFourDirections(position + Vector3.down))
+                    {
+                        position = position + Vector3.down;
+                        var invBlock = BlocksPool.instance.GetBlockFromPool(BlockType.Invisible);
+                        invBlock.transform.position = position;
+                        invBlock.transform.parent = invisibleBlocks;
+
+                        createNextBlock = true;
+                    }
+                }
+            }
+        }
+    }
+
+    bool IsBlockInFourDirections(Vector3 position)
+    {
+        Vector3[] directions = new Vector3[] { Vector3.forward, Vector3.back, Vector3.left, Vector3.right};
+        RaycastHit hit;
+        foreach (var direction in directions)
+        {
+            if (Physics.Raycast(position, direction, out hit, 1f))
+            {
+                if (hit.transform.gameObject.GetComponent<Block>().properties.blockType != BlockType.Invisible)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -174,12 +227,67 @@ public class TerrainChunk : MonoBehaviour
         {
             blockHeights.Add(GetBlockHeight(x, y + 1));
         }
-
+                
         // Find block with the lowest height
         var minimalHeight = Mathf.Min(blockHeights.ToArray());
                 
         return (height - minimalHeight - 1);
     }
+
+    private List<Vector3> OutTerrainDirection(int x, int y)
+    {
+        var height = maxChunkHeight;
+        Vector3[] directions = new Vector3[] {Vector3.left, Vector3.right, Vector3.forward, Vector3.back };        
+        List<int> indexes = new List<int>();
+
+        for (int i = 0; i < 4; i++)        
+        {
+            var direction = directions[i];
+            if (x + direction.x > chunkSize || 
+                x + direction.x < 0 || 
+                y + direction.z > chunkSize || 
+                y + direction.z < 0)
+                continue;
+
+            var blockHeight = GetBlockHeight(x + (int)direction.x, y + (int)direction.z);
+            if (blockHeight <= height)
+            {
+                if (blockHeight == height)
+                {
+                    indexes.Add(i); 
+                }
+                else
+                {
+                    height = blockHeight;
+                    indexes.Clear();
+                    indexes.Add(i);
+                }
+                
+            }
+        }        
+
+        var directionsResult = new List<Vector3>();
+        if (height == GetBlockHeight(x, y))
+        {
+            return directionsResult;
+        }
+
+        for (int i = 0; i < directions.Length; i++)
+        {
+            if (indexes.Contains(i))
+                continue;
+
+            directionsResult.Add(directions[i]);
+        }
+        /*
+        foreach (var index in indexes)
+        {
+            directionsResult.Add(directions[index]);
+        }*/
+
+        return directionsResult;
+    }
+        
 
     /// <summary>
     /// Get height of block from the heightmap of terrain chunk

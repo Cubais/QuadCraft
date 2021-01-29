@@ -10,6 +10,7 @@ public enum BlockType {Dirt, DirtGrass, Stone, StoneSnow, Sand, Ice, Invisible, 
 public class BlocksPool : MonoBehaviour
 {
     public static BlocksPool instance;
+    public Transform availableBlocksParent;
     
     /// <summary>
     /// We have one set per block type, representing available blocks of that type
@@ -76,6 +77,7 @@ public class BlocksPool : MonoBehaviour
         }
 
         var blockType = block.GetComponent<Block>().properties.blockType;
+        block.transform.parent = availableBlocksParent;
         block.SetActive(false);
 
         availableBlocksSet[(int)blockType].Add(block);
@@ -117,8 +119,10 @@ public class BlocksPool : MonoBehaviour
                 if (!Physics.Raycast(block.transform.position + blockDirection, direction, out hit, 1))
                 {
                     var newBlock = GetBlockFromPool(BlockType.Invisible);
+                    var chunk = TerrainGeneration.instance.GetChunkOnPosition(blocksToReplace[0].transform.position.x, blocksToReplace[0].transform.position.z);
+
                     newBlock.transform.position = block.transform.position + blockDirection + direction;
-                    newBlock.transform.parent = blocksToReplace[0].transform.parent;
+                    newBlock.transform.parent = chunk.invisibleBlocksParent.transform;
                 }
             }
 
@@ -130,8 +134,10 @@ public class BlocksPool : MonoBehaviour
         foreach (var invisibleBlock in blocksToReplace)
         {
             var newBlock = GetBlockFromPool(blockTypeUnder);
+            var chunk = TerrainGeneration.instance.GetChunkOnPosition(block.transform.position.x, block.transform.position.z);
+
             newBlock.transform.position = invisibleBlock.transform.position;
-            newBlock.transform.parent = block.transform.parent;
+            newBlock.transform.parent = chunk.groundBlocksParent.transform;
 
             GiveBlockToPool(invisibleBlock);
         }        

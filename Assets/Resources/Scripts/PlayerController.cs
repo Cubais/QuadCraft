@@ -165,7 +165,11 @@ public class PlayerController : MonoBehaviour, IPLayerInput
                 {
                     buildingButtonPressed = false;
                     var block = BlocksPool.instance.GetBlockFromPool(currentBlockToBuildType);
+                    var chunk = TerrainGeneration.instance.GetChunkOnPosition(transform.position.x, transform.position.z);
+                    chunk.SetChangedTerrain(true);
+
                     block.transform.position = position;
+                    block.transform.parent = chunk.groundBlocksParent.transform;                    
                 }
             }
             else
@@ -256,6 +260,10 @@ public class PlayerController : MonoBehaviour, IPLayerInput
             {
                 BlocksPool.instance.CoverHoles(blockToDestroy);
                 BlocksPool.instance.GiveBlockToPool(blockToDestroy);
+
+                var chunk = TerrainGeneration.instance.GetChunkOnPosition(blockToDestroy.transform.position.x, blockToDestroy.transform.position.z);
+                chunk.SetChangedTerrain(true);
+
                 break;
             }
             

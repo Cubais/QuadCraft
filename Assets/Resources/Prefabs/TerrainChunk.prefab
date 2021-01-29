@@ -77,8 +77,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxChunkHeight: 30
-  invisibleBlocks: {fileID: 9132005432955449416}
-  groundBlocks: {fileID: 1549719070068022598}
+  invisibleBlocksParent: {fileID: 9132005432955449416}
+  groundBlocksParent: {fileID: 1549719070068022598}
 --- !u!65 &7132872134467584453
 BoxCollider:
   m_ObjectHideFlags: 0

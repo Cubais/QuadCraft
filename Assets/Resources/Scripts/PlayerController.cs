@@ -70,6 +70,9 @@ public class PlayerController : MonoBehaviour, IPLayerInput
 
     public void Move(Vector2 moveValue)
     {
+        if (!controller)
+            return;
+
         var move = transform.right * moveValue.x + transform.forward * moveValue.y;
         controller.Move(move * speed * Time.deltaTime);
     }

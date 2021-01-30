@@ -3,7 +3,7 @@
     "m_SelectedPackage": {
         "deviceId": "121beeeb",
         "name": "com.DefaultCompany.MinecraftLike",
-        "processId": 14945,
+        "processId": 28130,
         "exited": false
     },
     "m_SelectedPriority": 0,
@@ -11,73 +11,55 @@
         {
             "deviceId": "121beeeb",
             "name": "com.DefaultCompany.MinecraftLike",
-            "processId": 22699,
+            "processId": 28404,
             "exited": true
         },
         {
             "deviceId": "121beeeb",
             "name": "com.DefaultCompany.MinecraftLike",
-            "processId": 25688,
+            "processId": 13013,
             "exited": true
         },
         {
             "deviceId": "121beeeb",
             "name": "com.DefaultCompany.MinecraftLike",
-            "processId": 29019,
+            "processId": 15490,
             "exited": true
         },
         {
             "deviceId": "121beeeb",
             "name": "com.DefaultCompany.MinecraftLike",
-            "processId": 29938,
+            "processId": 17518,
             "exited": true
         },
         {
             "deviceId": "121beeeb",
             "name": "com.DefaultCompany.MinecraftLike",
-            "processId": 31375,
+            "processId": 20744,
             "exited": true
         },
         {
             "deviceId": "121beeeb",
             "name": "com.DefaultCompany.MinecraftLike",
-            "processId": 3290,
+            "processId": 24568,
             "exited": false
         },
         {
             "deviceId": "121beeeb",
             "name": "com.DefaultCompany.MinecraftLike",
-            "processId": 4921,
-            "exited": false
+            "processId": 25502,
+            "exited": true
         },
         {
             "deviceId": "121beeeb",
             "name": "com.DefaultCompany.MinecraftLike",
-            "processId": 5764,
+            "processId": 28130,
             "exited": false
         },
         {
-            "deviceId": "121beeeb",
-            "name": "com.DefaultCompany.MinecraftLike",
-            "processId": 10528,
-            "exited": false
-        },
-        {
-            "deviceId": "121beeeb",
-            "name": "com.DefaultCompany.MinecraftLike",
-            "processId": 12305,
-            "exited": false
-        },
-        {
-            "deviceId": "121beeeb",
-            "name": "com.DefaultCompany.MinecraftLike",
-            "processId": 13799,
-            "exited": false
-        },
-        {
-            "deviceId": "121beeeb",
-            "name": "com.DefaultCompany.MinecraftLike",
-            "processId": 14945,
+            "deviceId": "1a0da27",
+            "name": "com.miui.home",
+            "processId": 32378,
             "exited": false
         }
     ],
@@ -89,7 +71,7 @@
             },
             {
                 "m_Name": "No Filter",
-                "m_Selected": true
+                "m_Selected": false
             },
             {
                 "m_Name": "",
@@ -105,7 +87,7 @@
             },
             {
                 "m_Name": "Unity",
-                "m_Selected": false
+                "m_Selected": true
             },
             {
                 "m_Name": "CRASH",

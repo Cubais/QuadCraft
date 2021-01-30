@@ -17,6 +17,7 @@ public class UIManager : MonoBehaviour
 
     public Button[] blockButtons;
     public Slider destroyingSlider;
+    public Button buildButton;
     bool isDestroyingMode = false;
     bool inBuildingMode = false;
 
@@ -63,7 +64,7 @@ public class UIManager : MonoBehaviour
                 OnToggleDestroyingMode();
             }
 
-            if (Input.GetMouseButtonDown(0))
+            /*if (Input.GetMouseButtonDown(0))
             {
                 OnBuildingButtonPressed();
             }
@@ -71,7 +72,7 @@ public class UIManager : MonoBehaviour
             if (Input.GetMouseButtonUp(0))
             {
                 OnBuildingButtonReleased();
-            }
+            }*/
         }
     }
     public void OnBuildingButtonPressed()

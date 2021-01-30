@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class InputManager : MonoBehaviour
 {
@@ -8,16 +9,17 @@ public class InputManager : MonoBehaviour
         
     public GameObject playerObject;
     public Joystick moveJoystick;
-    public Joystick viewJoystick;
+    public RectTransform[] touchArea;
 
-    public float minViewAngle = 60;
-    public float maxViewAngle = -20;
+    public float minViewAngle;
+    public float maxViewAngle;
 
     Vector2 currentMoveInput;
     Vector2 currentViewInput;
+    int viewTouchID = -1;
 
     private IPLayerInput player;
-    
+
     bool jump;
     bool recieveInput = true;
 
@@ -44,7 +46,6 @@ public class InputManager : MonoBehaviour
         {
             player.Jump();
         }
-        
     }
 
     public void SetPlayer(IPLayerInput player)
@@ -54,7 +55,8 @@ public class InputManager : MonoBehaviour
 
     private void HandleInput()
     {
-        #if UNITY_EDITOR_WIN
+
+    #if UNITY_EDITOR_WIN
 
         currentMoveInput.x = Input.GetAxisRaw("Horizontal");
         currentMoveInput.y = Input.GetAxisRaw("Vertical");
@@ -64,17 +66,101 @@ public class InputManager : MonoBehaviour
 
         jump = Input.GetKeyDown(KeyCode.Space);
 
-        #endif
+    #endif
 
-        #if UNITY_ANDROID
+    #if UNITY_ANDROID
 
         currentMoveInput.x = moveJoystick.Horizontal;
-        currentMoveInput.y = moveJoystick.Vertical;
+        currentMoveInput.y = moveJoystick.Vertical;        
+        ProcessMobileViewInput();        
 
-        currentViewInput.x = viewJoystick.Horizontal;
-        currentViewInput.y = viewJoystick.Vertical;
+    #endif
+    }
 
-        #endif
+    private void ProcessMobileViewInput()
+    {
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.touches[0];
+            // If we don't have touches for view input, check if there is any
+            if (viewTouchID == -1)
+            {
+                if (GetTouchInsideArea(out touch, TouchPhase.Began))
+                {
+                    viewTouchID = touch.fingerId;                    
+                }
+            }
+            else
+            {
+                // We need to find finger with saved id
+                var found = false;
+                foreach (var t in Input.touches)
+                {
+                    if (t.fingerId == viewTouchID)
+                    {
+                        touch = t;
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (found)
+                {
+                    if (touch.phase == TouchPhase.Moved )
+                    {
+                        var deltaMove = touch.deltaPosition;
+                        deltaMove.Normalize();
+
+                        currentViewInput = deltaMove;
+                    }
+                    else if (touch.phase == TouchPhase.Canceled || touch.phase == TouchPhase.Ended)
+                    {
+                        currentViewInput = Vector2.zero;
+                        viewTouchID = -1;
+                    }
+                    else if (touch.phase == TouchPhase.Stationary)
+                    {
+                        currentViewInput = Vector2.zero;
+                    }
+                }
+                else
+                {
+                    viewTouchID = -1;
+                }
+            }
+        }
+        else
+        {
+            viewTouchID = -1;
+        } 
+    }
+
+    private bool InsideTouchArea(Vector2 touchPosition)
+    {
+        foreach (var area in touchArea)
+        {
+            if (RectTransformUtility.RectangleContainsScreenPoint(area, touchPosition))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool GetTouchInsideArea(out Touch touch, TouchPhase phase = TouchPhase.Moved)
+    {
+        foreach (var t in Input.touches)
+        {
+            if (InsideTouchArea(t.position) && t.phase == phase)
+            {
+                touch = t;
+                return true;
+            }
+        }
+
+        touch = new Touch();
+        return false;
     }
 
     public void RecieveInput(bool recieve)

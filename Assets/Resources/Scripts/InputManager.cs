@@ -19,6 +19,7 @@ public class InputManager : MonoBehaviour
     private IPLayerInput player;
     
     bool jump;
+    bool recieveInput = true;
 
     private void Awake()
     {
@@ -31,7 +32,7 @@ public class InputManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (player == null)
+        if (player == null || !recieveInput)
             return;
 
         HandleInput();
@@ -74,6 +75,11 @@ public class InputManager : MonoBehaviour
         currentViewInput.y = viewJoystick.Vertical;
 
         #endif
+    }
+
+    public void RecieveInput(bool recieve)
+    {
+        this.recieveInput = recieve;
     }
 }
 

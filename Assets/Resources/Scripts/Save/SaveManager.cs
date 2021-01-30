@@ -15,17 +15,23 @@ public class SaveManager : MonoBehaviour
         {
             instance = this;
         }
+        else
+        {
+            Destroy(instance.gameObject);
+            instance = this;
+        }
     }
+
     // Update is called once per frame
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.O))
         {
-            SaveData();
+            SaveGame();
         }
     }
 
-    public void SaveData()
+    public void SaveGame()
     {
         var terrainData = TerrainGeneration.instance.SaveTerrain();
         var chunks = TerrainGeneration.instance.SaveChunksIndividually();

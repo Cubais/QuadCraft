@@ -1,14 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
-    public GameObject playerPrefab;
-    public TerrainGeneration terrain;
-
+    private GameObject playerPrefab;
+    private TerrainGeneration terrain;
     private GameObject createdPlayer;
 
     private void Awake()
@@ -16,13 +16,18 @@ public class GameManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
-        }        
+        }
     }
 
     private void Start()
     {
-        CreateGame(true);
+        terrain = TerrainGeneration.instance;
+        playerPrefab = Resources.Load<GameObject>("Prefabs/PlayerNew");
+
+        var fromSave = PlayerPrefs.HasKey("LoadGame") && PlayerPrefs.GetInt("LoadGame") == 1;
+        CreateGame(fromSave);        
     }
+
     public GameObject GetPlayer()
     {
         return createdPlayer;

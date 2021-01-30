@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
@@ -137,5 +138,21 @@ public class UIManager : MonoBehaviour
     private void ResetDestroyingMode()
     {
         isDestroyingMode = false;
+        SetInteractableBlocks(true);
+    }
+
+    public void OnBackToMenu()
+    {
+        SceneManager.LoadScene("MenuScene");
+    }
+
+    public void OnSaveGame()
+    {
+        SaveManager.instance.SaveGame();
+    }
+
+    public void OnReturnMenu(bool recieveInput)
+    {
+        InputManager.instance.RecieveInput(recieveInput);
     }
 }

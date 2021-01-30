@@ -46,7 +46,7 @@ public class PlayerController : MonoBehaviour, IPLayerInput
         UIManager.instance.buildingButtonPressed += BuildingButtonPressed;
         UIManager.instance.buildingButtonReleased += BuildingButtonReleased;
 
-        Cursor.lockState = CursorLockMode.Locked;
+        //Cursor.lockState = CursorLockMode.Locked;
     }
 
     // Update is called once per frame
@@ -115,6 +115,7 @@ public class PlayerController : MonoBehaviour, IPLayerInput
 
         if (inBuildingMode)
         {
+
             StartCoroutine(MoveBuildingBlock());
         }
         else

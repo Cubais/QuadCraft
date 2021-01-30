@@ -347,33 +347,24 @@ public class TerrainChunk : MonoBehaviour
         {
             chunkData.groundBlocks = new List<BlockSaveData>();
             chunkData.invisibleBlocks = new List<BlockSaveData>();
-
-            // This chunk has not been saved yet, need to store all cubes informations
-            if (groundBlocksData.Count == 0)
+            
+            Transform block;
+            BlockType type;
+            for (int i = 0; i < groundBlocksParent.childCount; i++)
             {
-                Transform block;
-                BlockType type;
-                for (int i = 0; i < groundBlocksParent.childCount; i++)
-                {
-                    block = groundBlocksParent.GetChild(i);
-                    type = block.GetComponent<Block>().properties.blockType;
+                block = groundBlocksParent.GetChild(i);
+                type = block.GetComponent<Block>().properties.blockType;
 
-                    var blockData = new BlockSaveData(block.transform.position, type);
-                    chunkData.groundBlocks.Add(blockData);
-                }
-
-                for (int i = 0; i < invisibleBlocksParent.childCount; i++)
-                {
-                    block = invisibleBlocksParent.GetChild(i);
-                    var blockData = new BlockSaveData(block.transform.position, BlockType.Invisible);
-                    chunkData.invisibleBlocks.Add(blockData);
-                }
+                var blockData = new BlockSaveData(block.transform.position, type);
+                chunkData.groundBlocks.Add(blockData);
             }
-            else
+
+            for (int i = 0; i < invisibleBlocksParent.childCount; i++)
             {
-                chunkData.groundBlocks = groundBlocksData;
-                chunkData.invisibleBlocks = invisibleBlocksData;
-            }
+                block = invisibleBlocksParent.GetChild(i);
+                var blockData = new BlockSaveData(block.transform.position, BlockType.Invisible);
+                chunkData.invisibleBlocks.Add(blockData);
+            }          
         }
 
         return chunkData;

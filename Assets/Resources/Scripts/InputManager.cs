@@ -14,14 +14,14 @@ public class InputManager : MonoBehaviour
     public float minViewAngle;
     public float maxViewAngle;
 
-    Vector2 currentMoveInput;
-    Vector2 currentViewInput;
-    int viewTouchID = -1;
+    private Vector2 currentMoveInput;
+    private Vector2 currentViewInput;
+    private int viewTouchID = -1;
 
     private IPLayerInput player;
 
-    bool jump;
-    bool recieveInput = true;
+    private bool jump;
+    private bool recieveInput = true;
 
     private void Awake()
     {
@@ -82,12 +82,14 @@ public class InputManager : MonoBehaviour
         if (Input.touchCount > 0)
         {
             Touch touch = Input.touches[0];
+
             // If we don't have touches for view input, check if there is any
             if (viewTouchID == -1)
             {
                 if (GetTouchInsideArea(out touch, TouchPhase.Began))
                 {
-                    viewTouchID = touch.fingerId;                    
+                    viewTouchID = touch.fingerId;
+                    
                 }
             }
             else
@@ -104,11 +106,12 @@ public class InputManager : MonoBehaviour
                     }
                 }
 
+                // Our touch for view input is still on the screen
                 if (found)
                 {
                     if (touch.phase == TouchPhase.Moved )
                     {
-                        var deltaMove = touch.deltaPosition;
+                        var deltaMove = touch.deltaPosition;                        
                         deltaMove.Normalize();
 
                         currentViewInput = deltaMove;

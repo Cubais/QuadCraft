@@ -8,9 +8,6 @@ public class MenuController : MonoBehaviour
 {
     public Button continueGame;    
     
-    bool inGameScene = false;
-    bool loadGame = false;
-    
     void Start()
     {
         continueGame.enabled = SaveManager.instance.SaveGameExists();

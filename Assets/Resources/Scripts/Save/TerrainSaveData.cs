@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Serializable class for TerrainGeneration class
+/// </summary>
 [System.Serializable]
 public class TerrainSaveData
 {
@@ -12,6 +15,9 @@ public class TerrainSaveData
     public List<SVector2> terrainChunks;
 }
 
+/// <summary>
+/// Serializable wrap-up for Unity Vector2
+/// </summary>
 [System.Serializable]
 public class SVector2
 {
@@ -38,6 +44,9 @@ public class SVector2
     }
 }
 
+/// <summary>
+/// Serializable wrap-up for Unity Vector3
+/// </summary>
 [System.Serializable]
 public class SVector3
 {
@@ -59,6 +68,9 @@ public class SVector3
     }
 }
 
+/// <summary>
+/// Serializable class for TerrainChunk class
+/// </summary>
 [System.Serializable]
 public class TerrainChunkData
 {
@@ -71,6 +83,9 @@ public class TerrainChunkData
     public List<BlockSaveData> invisibleBlocks;
 }
 
+/// <summary>
+/// Serializable class for block data
+/// </summary>
 [System.Serializable]
 public class BlockSaveData
 {

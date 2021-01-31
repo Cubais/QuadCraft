@@ -22,15 +22,9 @@ public class SaveManager : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.O))
-        {
-            SaveGame();
-        }
-    }
-
+    /// <summary>
+    /// Saves game data
+    /// </summary>
     public void SaveGame()
     {
         var terrainData = TerrainGeneration.instance.SaveTerrain();
@@ -48,12 +42,15 @@ public class SaveManager : MonoBehaviour
 
         Directory.CreateDirectory(Application.persistentDataPath + "/ChunksData");
 
+        // Saves each chunk into separate file
         foreach (var chunk in chunks)
         {
             var sufix = chunk.worldPosition.x + "_" + chunk.worldPosition.y + "_ChunkData.save";
             file = File.Create(Application.persistentDataPath + "/ChunksData/" + sufix);
             bf.Serialize(file, chunk);
             file.Close();
+
+            Debug.Log("SAVE: " + chunk.worldPosition.x + " " + chunk.worldPosition.y);
         }
 
         // Save player position
@@ -63,6 +60,10 @@ public class SaveManager : MonoBehaviour
         file.Close();
     }
 
+    /// <summary>
+    /// Loads terrain data
+    /// </summary>
+    /// <returns>Loaded TerrainSaveData</returns>
     public TerrainSaveData LoadTerrainData()
     {
         if (File.Exists(Application.persistentDataPath + "/gamesave.save"))
@@ -78,6 +79,11 @@ public class SaveManager : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Loads data of the individual chunk
+    /// </summary>
+    /// <param name="chunkWorldPosition">Wolrd position of the chunk</param>
+    /// <returns>Filled TerrainCunkData</returns>
     public TerrainChunkData LoadChunkData(Vector2 chunkWorldPosition)
     {
         var path = Application.persistentDataPath + "/ChunksData/" + chunkWorldPosition.x + "_" + chunkWorldPosition.y + "_ChunkData.save";
@@ -94,6 +100,10 @@ public class SaveManager : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Loads player position
+    /// </summary>
+    /// <returns>Player position in the world</returns>
     public Vector3 LoadPlayerPosition()
     {
         var path = Application.persistentDataPath + "/playerData.save";
@@ -110,6 +120,10 @@ public class SaveManager : MonoBehaviour
         return Vector3.zero;
     }
 
+    /// <summary>
+    /// Does the saved game exists
+    /// </summary>
+    /// <returns>rue if game exists</returns>
     public bool SaveGameExists()
     {
         return File.Exists(Application.persistentDataPath + "/gamesave.save") && Directory.Exists(Application.persistentDataPath + "/ChunksData");

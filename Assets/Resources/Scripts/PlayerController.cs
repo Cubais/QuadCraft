@@ -4,18 +4,23 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour, IPLayerInput
 {
+    [Tooltip("Movement speed")]
     public float speed = 2f;
     public float rotationSpeed = 100f;
+
     public float gravity = -9.81f;
     public float jumpHeight = 1.5f;
     public Transform cameraTransform;
 
+    [Tooltip("Range of the building mode")]
     public float buildingModeRange = 4f;
-
+    
+    // Helper variables
     private float pitchRotation = 0;
     private CharacterController controller;
     private Vector3 velocity;
 
+    // Building mode variables
     private bool inBuildingMode = false;
     private bool inDestroyingMode = false;
     private GameObject currentDestroyingBlock;
@@ -156,8 +161,7 @@ public class PlayerController : MonoBehaviour, IPLayerInput
         while (inBuildingMode && !inDestroyingMode)
         {
             var ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit, buildingModeRange, playerMask))
+            if (Physics.Raycast(ray, out RaycastHit hit, buildingModeRange, playerMask))
             {
                 buildingModeBlock.SetActive(true);
 
@@ -173,7 +177,7 @@ public class PlayerController : MonoBehaviour, IPLayerInput
                     chunk.SetChangedTerrain(true);
 
                     block.transform.position = position;
-                    block.transform.parent = chunk.groundBlocksParent.transform;                    
+                    block.transform.parent = chunk.groundBlocksParent.transform;
                 }
             }
             else
@@ -199,10 +203,8 @@ public class PlayerController : MonoBehaviour, IPLayerInput
         while (inBuildingMode && inDestroyingMode)
         {
             // Sending ray from the center of the screen
-            var ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-            RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit, buildingModeRange, playerMask))
+            var ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));            
+            if (Physics.Raycast(ray, out RaycastHit hit, buildingModeRange, playerMask))
             {               
                 destroyingModeBlock.SetActive(true);
                 destroyingModeBlock.transform.position = hit.transform.position;

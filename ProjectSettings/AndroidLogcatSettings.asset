@@ -3,47 +3,11 @@
     "m_SelectedPackage": {
         "deviceId": "121beeeb",
         "name": "com.DefaultCompany.MinecraftLike",
-        "processId": 28130,
+        "processId": 28649,
         "exited": false
     },
     "m_SelectedPriority": 0,
     "m_KnownPackagesForSerialization": [
-        {
-            "deviceId": "121beeeb",
-            "name": "com.DefaultCompany.MinecraftLike",
-            "processId": 28404,
-            "exited": true
-        },
-        {
-            "deviceId": "121beeeb",
-            "name": "com.DefaultCompany.MinecraftLike",
-            "processId": 13013,
-            "exited": true
-        },
-        {
-            "deviceId": "121beeeb",
-            "name": "com.DefaultCompany.MinecraftLike",
-            "processId": 15490,
-            "exited": true
-        },
-        {
-            "deviceId": "121beeeb",
-            "name": "com.DefaultCompany.MinecraftLike",
-            "processId": 17518,
-            "exited": true
-        },
-        {
-            "deviceId": "121beeeb",
-            "name": "com.DefaultCompany.MinecraftLike",
-            "processId": 20744,
-            "exited": true
-        },
-        {
-            "deviceId": "121beeeb",
-            "name": "com.DefaultCompany.MinecraftLike",
-            "processId": 24568,
-            "exited": false
-        },
         {
             "deviceId": "121beeeb",
             "name": "com.DefaultCompany.MinecraftLike",
@@ -54,6 +18,72 @@
             "deviceId": "121beeeb",
             "name": "com.DefaultCompany.MinecraftLike",
             "processId": 28130,
+            "exited": true
+        },
+        {
+            "deviceId": "121beeeb",
+            "name": "com.DefaultCompany.MinecraftLike",
+            "processId": 4320,
+            "exited": true
+        },
+        {
+            "deviceId": "121beeeb",
+            "name": "com.DefaultCompany.MinecraftLike",
+            "processId": 13653,
+            "exited": true
+        },
+        {
+            "deviceId": "121beeeb",
+            "name": "com.DefaultCompany.MinecraftLike",
+            "processId": 15160,
+            "exited": true
+        },
+        {
+            "deviceId": "121beeeb",
+            "name": "com.DefaultCompany.MinecraftLike",
+            "processId": 15635,
+            "exited": false
+        },
+        {
+            "deviceId": "121beeeb",
+            "name": "com.DefaultCompany.MinecraftLike",
+            "processId": 18454,
+            "exited": false
+        },
+        {
+            "deviceId": "121beeeb",
+            "name": "com.DefaultCompany.MinecraftLike",
+            "processId": 19776,
+            "exited": false
+        },
+        {
+            "deviceId": "121beeeb",
+            "name": "com.DefaultCompany.MinecraftLike",
+            "processId": 22977,
+            "exited": false
+        },
+        {
+            "deviceId": "121beeeb",
+            "name": "com.DefaultCompany.MinecraftLike",
+            "processId": 24924,
+            "exited": false
+        },
+        {
+            "deviceId": "121beeeb",
+            "name": "com.DefaultCompany.MinecraftLike",
+            "processId": 26052,
+            "exited": false
+        },
+        {
+            "deviceId": "121beeeb",
+            "name": "com.DefaultCompany.MinecraftLike",
+            "processId": 27852,
+            "exited": false
+        },
+        {
+            "deviceId": "121beeeb",
+            "name": "com.DefaultCompany.MinecraftLike",
+            "processId": 28649,
             "exited": false
         },
         {

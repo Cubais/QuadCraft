@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
 public enum Direction{ UP, RIGHT, DOWN, LEFT};
@@ -10,15 +11,15 @@ public class TerrainChunk : MonoBehaviour
     public Transform groundBlocksParent;
 
     // Representation of terrain chunk in height map
-    public Texture2D heightMap { get; private set; }
+    public Texture2D HeightMap { get; private set; }
+    public Vector2 NoiseOffset { get; private set; }
 
-    TerrainChunk[] neighbours = new TerrainChunk[4];
+    private TerrainChunk[] neighbours = new TerrainChunk[4];
+    
+    private int chunkSize;
+    private float scale;
+    private bool changedTerrain = false;
 
-    public Vector2 noiseOffset { get; private set; }
-    int chunkSize;
-    float scale;
-
-    bool changedTerrain = false;
     List<BlockSaveData> groundBlocksData = new List<BlockSaveData>();
     List<BlockSaveData> invisibleBlocksData = new List<BlockSaveData>();
 
@@ -56,10 +57,10 @@ public class TerrainChunk : MonoBehaviour
     public void GenerateChunk(int size, float noiseScale, Vector2 noiseOffset)
     {
         this.chunkSize = size;
-        this.noiseOffset = noiseOffset;
+        this.NoiseOffset = noiseOffset;
         this.scale = noiseScale;
 
-        heightMap = GenerateHeightMap();
+        HeightMap = GenerateHeightMap();
         LoadChunk();
     }
 
@@ -91,8 +92,8 @@ public class TerrainChunk : MonoBehaviour
     /// <returns></returns>
     private Color GetNoise(float x, float y)
     {
-        var xCoord = (x / chunkSize) * scale + noiseOffset.x;
-        var yCoord = (y / chunkSize) * scale + noiseOffset.y;
+        var xCoord = (x / chunkSize) * scale + NoiseOffset.x;
+        var yCoord = (y / chunkSize) * scale + NoiseOffset.y;
 
         var noise = Mathf.PerlinNoise(xCoord, yCoord);
 
@@ -104,11 +105,45 @@ public class TerrainChunk : MonoBehaviour
         changedTerrain = changed;
     }
 
+    public string GetKey()
+    {
+        return this.transform.position.x + "_" + this.transform.position.z;
+    }
+
+    public string GetKey(Direction dir)
+    {
+        string key= "";
+        switch (dir)
+        {
+            case Direction.UP:
+                key = (this.transform.position.x) + "_" + (this.transform.position.z + chunkSize);
+                break;
+            case Direction.RIGHT:
+                key = (this.transform.position.x + chunkSize) + "_" + (this.transform.position.z);
+                break;
+            case Direction.DOWN:
+                key = (this.transform.position.x) + "_" + (this.transform.position.z - chunkSize);
+                break;
+            case Direction.LEFT:
+                key = (this.transform.position.x - chunkSize) + "_" + (this.transform.position.z);
+                break;
+            default:
+                break;
+        }
+
+        return key;
+    }
     /// <summary>
     /// Disables blocks of the chunk
     /// </summary>
     public void DisableChunk()
     {
+        if (changedTerrain)
+        {
+            Debug.Log("CHANGED " + transform.position.x + " " + transform.position.z + " *** " + groundBlocksParent.childCount);
+        }
+
+
         groundBlocksData = new List<BlockSaveData>();
         invisibleBlocksData = new List<BlockSaveData>();
 
@@ -152,10 +187,10 @@ public class TerrainChunk : MonoBehaviour
     /// Loads chunk blocks
     /// </summary>
     public void LoadChunk()
-    {
+    {         
         if (!changedTerrain)
-        {
-            LoadChunkFromHeightMap();
+        {            
+            StartCoroutine(LoadChunkFromHeightMap());
             Debug.Log("HeightMap load");
         }
         else
@@ -165,11 +200,12 @@ public class TerrainChunk : MonoBehaviour
         }
     }
 
-    void LoadChunkFromHeightMap()
+    IEnumerator LoadChunkFromHeightMap()
     {
-        if (!heightMap)
+        if (!HeightMap)
             Debug.LogError("No heightMap present, cannot generate cubes");
 
+        var time = Time.realtimeSinceStartup;
         for (int x = 0; x < chunkSize; x++)
         {
             for (int y = 0; y < chunkSize; y++)
@@ -186,6 +222,7 @@ public class TerrainChunk : MonoBehaviour
                 // Calculate number of block to generate under current one to fill gap
                 var blockUnderCount = BlocksUnder(x, y, height);
 
+                // Fill gap
                 for (int i = 0; i < blockUnderCount; i++)
                 {
                     position.y--;
@@ -196,6 +233,7 @@ public class TerrainChunk : MonoBehaviour
                     block.transform.parent = groundBlocksParent;
                 }
 
+                // Create invisible block under each block, to be able to dynamically create terrain
                 if (!Physics.Raycast(position, Vector3.down, 1f))
                 {
                     block = BlocksPool.instance.GetBlockFromPool(BlockType.Invisible);
@@ -204,15 +242,21 @@ public class TerrainChunk : MonoBehaviour
                     block.transform.parent = invisibleBlocksParent;
                 }
             }
+
+            if (Time.realtimeSinceStartup - time > 0.06)
+            {
+                Debug.Log("Switch");
+                yield return null;
+                time = Time.realtimeSinceStartup;
+            }
         }
 
         Physics.SyncTransforms();
 
+        // Create invisible block to be able to dynamically create terrain
         var blocksUnder = invisibleBlocksParent.transform.GetComponentsInChildren<Block>();
         foreach (var block in blocksUnder)
         {
-            //Debug.DrawRay(block.transform.position, Vector3.down, Color.blue, 1000f);
-
             bool createNextBlock = true;
             var position = block.transform.position;
 
@@ -232,9 +276,19 @@ public class TerrainChunk : MonoBehaviour
                     }
                 }
             }
+
+            if (Time.realtimeSinceStartup - time > 0.06)
+            {
+                Debug.Log("Switch");
+                yield return null;
+                time = Time.realtimeSinceStartup;
+            }
         }
     }
 
+    /// <summary>
+    /// Loads terain chunk from stored data
+    /// </summary>
     void LoadChunkFromData()
     {
         foreach (var gBlock in groundBlocksData)
@@ -252,13 +306,17 @@ public class TerrainChunk : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Is invisible block in the forward, back, left, right directions ?
+    /// </summary>
+    /// <param name="position">Position from which condition is tested</param>
+    /// <returns></returns>
     bool IsBlockInFourDirections(Vector3 position)
     {
         Vector3[] directions = new Vector3[] { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
-        RaycastHit hit;
         foreach (var direction in directions)
         {
-            if (Physics.Raycast(position, direction, out hit, 1f))
+            if (Physics.Raycast(position, direction, out RaycastHit hit, 1f))
             {
                 if (hit.transform.gameObject.GetComponent<Block>().properties.blockType != BlockType.Invisible)
                 {
@@ -319,7 +377,7 @@ public class TerrainChunk : MonoBehaviour
     /// <returns>Height of block at the given position</returns>
     private int GetBlockHeight(int x, int y)
     {
-        var height = heightMap.GetPixel(x, y).grayscale * maxChunkHeight;
+        var height = HeightMap.GetPixel(x, y).grayscale * maxChunkHeight;
         height = Mathf.FloorToInt(height);
 
         return (int)height;
@@ -337,52 +395,57 @@ public class TerrainChunk : MonoBehaviour
         chunkData.worldPosition.y = transform.position.z;
 
         chunkData.chunkHeight = maxChunkHeight;
-        chunkData.noiseOffset = new SVector2(noiseOffset);
+        chunkData.noiseOffset = new SVector2(NoiseOffset);
 
         chunkData.changedTerrain = changedTerrain;
-        chunkData.terrainChunkTexture = (!changedTerrain) ? heightMap.EncodeToPNG() : null;
+        chunkData.terrainChunkTexture = (!changedTerrain) ? HeightMap.EncodeToPNG() : null;
 
         // If terrain was changed, we need to save each cube, otherwise we will generate terrain from heightmap
         if (changedTerrain)
         {
-            chunkData.groundBlocks = new List<BlockSaveData>();
-            chunkData.invisibleBlocks = new List<BlockSaveData>();
-            
-            Transform block;
-            BlockType type;
-            for (int i = 0; i < groundBlocksParent.childCount; i++)
-            {
-                block = groundBlocksParent.GetChild(i);
-                type = block.GetComponent<Block>().properties.blockType;
+            groundBlocksData = new List<BlockSaveData>();
+            invisibleBlocksData = new List<BlockSaveData>();
 
-                var blockData = new BlockSaveData(block.transform.position, type);
-                chunkData.groundBlocks.Add(blockData);
+            // Load block data
+            foreach (Transform block in groundBlocksParent)
+            {
+                var blockData = new BlockSaveData(block.position, block.GetComponent<Block>().properties.blockType);
+                groundBlocksData.Add(blockData);
             }
 
-            for (int i = 0; i < invisibleBlocksParent.childCount; i++)
+            foreach (Transform block in invisibleBlocksParent)
             {
-                block = invisibleBlocksParent.GetChild(i);
-                var blockData = new BlockSaveData(block.transform.position, BlockType.Invisible);
-                chunkData.invisibleBlocks.Add(blockData);
-            }          
+                var blockData = new BlockSaveData(block.position, BlockType.Invisible);
+                invisibleBlocksData.Add(blockData);
+            }
+
+            chunkData.groundBlocks = groundBlocksData;
+            chunkData.invisibleBlocks = invisibleBlocksData;
         }
 
         return chunkData;
     }
 
+    /// <summary>
+    /// Loads terrain chunk data from save
+    /// </summary>
+    /// <param name="data">Data from save</param>
+    /// <param name="chunkSize">Size of the terrain chunk</param>
+    /// <param name="noiseScale">Scale of teh perlin noise</param>
     public void LoadChunkData(TerrainChunkData data,int chunkSize, float noiseScale)
     {
         this.chunkSize = chunkSize;
         this.scale = noiseScale;
 
         maxChunkHeight = data.chunkHeight;
-        noiseOffset = new Vector2(data.noiseOffset.x, data.noiseOffset.y);
+        NoiseOffset = new Vector2(data.noiseOffset.x, data.noiseOffset.y);
         changedTerrain = data.changedTerrain;
-        heightMap = GenerateHeightMap();
+        HeightMap = GenerateHeightMap();
 
+        // If terrain was not changed, restore height map
         if (!changedTerrain)
         {
-            heightMap.LoadImage(data.terrainChunkTexture);
+            HeightMap.LoadImage(data.terrainChunkTexture);
         }
         else
         {

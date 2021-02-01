@@ -250,7 +250,7 @@ public class TerrainChunk : MonoBehaviour
                 }
             }
 
-            if (Time.realtimeSinceStartup - time > 0.06)
+            if (Time.realtimeSinceStartup - time > 0.08)
             {
                 Debug.Log("Switch");
                 yield return null;
@@ -284,7 +284,7 @@ public class TerrainChunk : MonoBehaviour
                 }
             }
 
-            if (Time.realtimeSinceStartup - time > 0.06)
+            if (Time.realtimeSinceStartup - time > 0.08)
             {
                 Debug.Log("Switch");
                 yield return null;
@@ -432,24 +432,34 @@ public class TerrainChunk : MonoBehaviour
         // If terrain was changed, we need to save each cube, otherwise we will generate terrain from heightmap
         if (changedTerrain)
         {
-            groundBlocksData = new List<BlockSaveData>();
-            invisibleBlocksData = new List<BlockSaveData>();
-
-            // Load block data
-            foreach (Transform block in groundBlocksParent)
+            // This chunk is not active, save last blocks data
+            if (groundBlocksParent.childCount == 0)
             {
-                var blockData = new BlockSaveData(block.position, block.GetComponent<Block>().properties.blockType);
-                groundBlocksData.Add(blockData);
+                chunkData.groundBlocks = groundBlocksData;
+                chunkData.invisibleBlocks = invisibleBlocksData;
             }
-
-            foreach (Transform block in invisibleBlocksParent)
+            // If chunk is active, some changes can happened, so save all blocks from scratch
+            else
             {
-                var blockData = new BlockSaveData(block.position, BlockType.Invisible);
-                invisibleBlocksData.Add(blockData);
-            }
+                groundBlocksData = new List<BlockSaveData>();
+                invisibleBlocksData = new List<BlockSaveData>();
 
-            chunkData.groundBlocks = groundBlocksData;
-            chunkData.invisibleBlocks = invisibleBlocksData;
+                // Load block data
+                foreach (Transform block in groundBlocksParent)
+                {
+                    var blockData = new BlockSaveData(block.position, block.GetComponent<Block>().properties.blockType);
+                    groundBlocksData.Add(blockData);
+                }
+
+                foreach (Transform block in invisibleBlocksParent)
+                {
+                    var blockData = new BlockSaveData(block.position, BlockType.Invisible);
+                    invisibleBlocksData.Add(blockData);
+                }
+
+                chunkData.groundBlocks = groundBlocksData;
+                chunkData.invisibleBlocks = invisibleBlocksData;
+            }
         }
 
         return chunkData;

@@ -112,7 +112,7 @@ public class InputManager : MonoBehaviour
                     if (touch.phase == TouchPhase.Moved )
                     {
                         var deltaMove = touch.deltaPosition;                        
-                        deltaMove.Normalize();
+                        //deltaMove.Normalize();
 
                         currentViewInput = deltaMove;
                     }

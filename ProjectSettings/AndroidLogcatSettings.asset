@@ -3,8 +3,8 @@
     "m_SelectedPackage": {
         "deviceId": "121beeeb",
         "name": "com.DefaultCompany.MinecraftLike",
-        "processId": 28649,
-        "exited": false
+        "processId": 13668,
+        "exited": true
     },
     "m_SelectedPriority": 0,
     "m_KnownPackagesForSerialization": [
@@ -85,6 +85,18 @@
             "name": "com.DefaultCompany.MinecraftLike",
             "processId": 28649,
             "exited": false
+        },
+        {
+            "deviceId": "121beeeb",
+            "name": "com.DefaultCompany.MinecraftLike",
+            "processId": 9197,
+            "exited": false
+        },
+        {
+            "deviceId": "121beeeb",
+            "name": "com.DefaultCompany.MinecraftLike",
+            "processId": 13668,
+            "exited": true
         },
         {
             "deviceId": "1a0da27",

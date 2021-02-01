@@ -24,7 +24,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         terrain = TerrainGeneration.instance;
-        playerPrefab = Resources.Load<GameObject>("Prefabs/PlayerNew");
+        playerPrefab = Resources.Load<GameObject>("Prefabs/Player/PlayerNew");
 
         var fromSave = PlayerPrefs.HasKey("LoadGame") && PlayerPrefs.GetInt("LoadGame") == 1;
         CreateGame(fromSave);        

@@ -98,6 +98,7 @@ public class UIManager : MonoBehaviour
 
     public void OnBackToMenu()
     {
+        SaveManager.instance.SaveGame();
         SceneManager.LoadScene("MenuScene");
     }
 

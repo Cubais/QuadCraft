@@ -159,7 +159,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 5
-  rotationSpeed: 100
+  rotationSpeed: 10
   gravity: -9.81
   jumpHeight: 1
   cameraTransform: {fileID: 4981027231837777403}

@@ -76,7 +76,7 @@ public class TerrainChunk : MonoBehaviour
         {
             for (int y = 0; y < chunkSize; y++)
             {
-                texture.SetPixel(x, y, GetNoise(x, y));
+                texture.SetPixel(x, y, GetNoise(x, y, NoiseOffset));
             }
         }
 
@@ -90,26 +90,38 @@ public class TerrainChunk : MonoBehaviour
     /// <param name="x">X position on the chunk</param>
     /// <param name="y">Y position on the chunk</param>
     /// <returns></returns>
-    private Color GetNoise(float x, float y)
+    private Color GetNoise(float x, float y, Vector2 noiseOffset)
     {
-        var xCoord = (x / chunkSize) * scale + NoiseOffset.x;
-        var yCoord = (y / chunkSize) * scale + NoiseOffset.y;
+        var xCoord = (x / chunkSize) * scale + noiseOffset.x;
+        var yCoord = (y / chunkSize) * scale + noiseOffset.y;
 
         var noise = Mathf.PerlinNoise(xCoord, yCoord);
 
         return new Color(noise, noise, noise);
     }
 
+    /// <summary>
+    /// Sets whether original terrain was changed
+    /// </summary>
+    /// <param name="changed">Terrain changed</param>
     public void SetChangedTerrain(bool changed)
     {
         changedTerrain = changed;
     }
 
+    /// <summary>
+    /// Get specific key for this terrain chunk
+    /// </summary>    
     public string GetKey()
     {
         return this.transform.position.x + "_" + this.transform.position.z;
     }
 
+    /// <summary>
+    /// Get specific terrain chunk key in the given direction
+    /// </summary>
+    /// <param name="dir">Direction of requested key of terrain chunk</param>
+    /// <returns></returns>
     public string GetKey(Direction dir)
     {
         string key= "";
@@ -133,17 +145,12 @@ public class TerrainChunk : MonoBehaviour
 
         return key;
     }
+
     /// <summary>
     /// Disables blocks of the chunk
     /// </summary>
     public void DisableChunk()
     {
-        if (changedTerrain)
-        {
-            Debug.Log("CHANGED " + transform.position.x + " " + transform.position.z + " *** " + groundBlocksParent.childCount);
-        }
-
-
         groundBlocksData = new List<BlockSaveData>();
         invisibleBlocksData = new List<BlockSaveData>();
 
@@ -203,7 +210,7 @@ public class TerrainChunk : MonoBehaviour
     IEnumerator LoadChunkFromHeightMap()
     {
         if (!HeightMap)
-            Debug.LogError("No heightMap present, cannot generate cubes");
+            Debug.LogError("No heightMap present, cannot generate blocks");
 
         var time = Time.realtimeSinceStartup;
         for (int x = 0; x < chunkSize; x++)
@@ -333,32 +340,40 @@ public class TerrainChunk : MonoBehaviour
     /// </summary>
     /// <param name="x">X coord in the heightmap</param>
     /// <param name="y">Y coord in the heightmap</param>
-    /// <param name="height">Minimal required number of blocks to fill the gap</param>
-    /// <returns></returns>
+    /// <param name="height">Maximal required number of blocks to fill the gap</param>
+    /// <returns>Number of block to be generated to fill the gap</returns>
     private int BlocksUnder(int x, int y, int height)
     {
         var blockHeights = new List<int>();
 
-        // Look at the block on the LEFT
+        // Look at the block on the LEFT within this chunk
         if (x != 0)
         {
             blockHeights.Add(GetBlockHeight(x - 1, y));
+        }        
+        else
+        {
+            blockHeights.Add(Mathf.FloorToInt(height - scale));
         }
 
-        // Look at the block on the RIGHT
-        if (x != (chunkSize - 1))
+        // Look at the block on the RIGHT within this chunk
+        if (x != chunkSize)
         {
             blockHeights.Add(GetBlockHeight(x + 1, y));
-        }
-
-        // Look at the BOTTOM block
+        }        
+       
+        // Look at the BOTTOM block within this chunk
         if (y != 0)
         {
             blockHeights.Add(GetBlockHeight(x, y - 1));
+        }        
+        else
+        {
+            blockHeights.Add(Mathf.FloorToInt(height - scale));
         }
 
-        // Look at the UPPER block
-        if (y != (chunkSize - 1))
+        // Look at the UPPER block within this chunk
+        if (y != chunkSize)
         {
             blockHeights.Add(GetBlockHeight(x, y + 1));
         }
@@ -382,6 +397,20 @@ public class TerrainChunk : MonoBehaviour
 
         return (int)height;
     }
+
+    /// <summary>
+    /// Get height of block from the given color
+    /// </summary>
+    /// <param name="color">Color representing height</param>
+    /// <returns>Height based on the given color</returns>
+    private int GetBlockHeight(Color color)
+    {
+        var height = color.grayscale * maxChunkHeight;
+        height = Mathf.FloorToInt(height);
+
+        return (int)height;
+    }
+
 
     /// <summary>
     /// Fill TerrainChunkData with appropriate data to be saved
